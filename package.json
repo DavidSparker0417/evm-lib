@@ -1,16 +1,24 @@
 {
-  "name": "2.typescript-init",
-  "version": "1.0.0",
-  "main": "index.js",
+  "name": "@david-lab/evm-lib",
+  "version": "1.0.34",
+  "description": "Ethereum web3 library",
+  "main": "dist/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "ts-node src/test/index.ts"
   },
-  "keywords": [],
-  "author": "",
+  "keywords": [
+    "ethereum",
+    "web3"
+  ],
+  "homepage": "https://github.com/DavidSparker0417/evm-lib#readme",
+  "author": "DavidSparker",
   "license": "ISC",
-  "description": "",
   "dependencies": {
+    "@types/bignumber.js": "^5.0.0",
     "@types/node": "^22.3.0",
-    "typescript": "^5.5.4"
+    "bignumber.js": "^9.1.2",
+    "dotenv": "^16.4.5",
+    "typescript": "^5.5.4",
+    "web3": "^4.12.1"
   }
 }
