@@ -4,6 +4,8 @@ import { evmContractSendTransaction } from "../../contract/common";
 import { Web3Account } from "../../types";
 import { evmAccount } from "../../wallet";
 import { JoePath, LiquidityParam } from "./types";
+import { evmErc20Approve } from "../../contract";
+import { signer } from "../../test";
 
 export async function evmTrJoeAddLiquidity(_sender: Web3Account|string, router: string, param: LiquidityParam): Promise<string> {
   const sender = evmAccount(_sender)
@@ -29,7 +31,7 @@ export async function evmTrJoeSwapExactTokensForTokens(
     amountOutMin,
     tokenPath,
     to,
-    deadline ? deadline : ((new Date()).getTime() / 1000) + 3600
+    deadline ? deadline : Math.floor((new Date()).getTime() / 1000) + 3600
   ).encodeABI()
   return await evmContractSendTransaction(trader, router, txData)
 }

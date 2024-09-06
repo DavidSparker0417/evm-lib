@@ -40,9 +40,8 @@ async function testPumpFun() {
 
   // --------------- sell ----------------
   // 1. get the amount of token to sell
-  const tokenBalance = await evmTokenGetBalance(signer.address, token)
+  const [_, amountToken] = await evmTokenGetBalance(signer.address, token)
   const tokenDecimals = await evmTokenGetDecimals(token)
-  const amountToken = evmWeb3.utils.toWei(tokenBalance, tokenDecimals)
   // 2. approve
   await evmErc20Approve(signer, token, BONDING_CURVE, amountToken)
   // 3. sell
@@ -59,9 +58,9 @@ async function testPumpFun() {
 }
 
 const lbRouter = "0xe20e58B747bC1E9753DF595D19001B366f49A78D"
+const baseToken = "0x702DC8AfCc61d28dA5D8Fd131218fbe8DAF19CeC"
+const quoteToken = "0x57eE725BEeB991c70c53f9642f36755EC6eb2139"
 async function traderJoeAddLiquidity() {
-  const baseToken = "0x702DC8AfCc61d28dA5D8Fd131218fbe8DAF19CeC"
-  const quoteToken = "0x57eE725BEeB991c70c53f9642f36755EC6eb2139"
   const liquidityParams:LiquidityParam = {
     tokenX: baseToken,
     tokenY: quoteToken,
@@ -89,13 +88,25 @@ async function traderJoeAddLiquidity() {
 }
 
 async function traderJoeSwap() {
-  // await evmTrJoeSwapExactTokensForTokens(
-  //   signer,
-  //   lbRouter,
-    
-  // )
+  const [_, balanceX] = await evmTokenGetBalance(signer.address, baseToken)
+
+  await evmErc20Approve(signer, baseToken, lbRouter, balanceX)
+  const txHash = await evmTrJoeSwapExactTokensForTokens(
+    signer,
+    lbRouter,
+    evmWeb3.utils.toWei(1, 'ether'),
+    evmWeb3.utils.toWei(0, 'ether'),
+    {
+      pairBinSteps: [1],
+      versions: [3],
+      tokenPath: [quoteToken, baseToken]
+    },
+    signer.address
+  )
+  console.log(`[DAVID](trader-joe) Swap success: txHash =`, txHash)
 }
 
 export async function testContract() {
-  await traderJoeAddLiquidity()
+  // await traderJoeAddLiquidity()
+  await traderJoeSwap()
 }
