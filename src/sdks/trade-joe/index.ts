@@ -7,3 +7,4 @@ export function evmTrJoeLBContract(address: string) {
 }
 
 export * from "./factory"
+export * from "./pool"
