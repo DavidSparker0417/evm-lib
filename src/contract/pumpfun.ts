@@ -76,7 +76,7 @@ export async function evmPFBuy(
   bc: string,
   token: string,
   tokenAmount: Numbers,
-  ethAmount: number,
+  ethAmount: Numbers,
   deadline: number = 60
 ): Promise<string> {
   const buyer = evmAccount(_buyer)
@@ -92,7 +92,7 @@ export async function evmPFBuy(
 
   const data = contract.methods.buy(
     token,
-    tokenAmount.toString(),
+    tokenAmount,
     Math.floor(Date.now() / 1000 + deadline),
   ).encodeABI()
 
@@ -100,7 +100,7 @@ export async function evmPFBuy(
     buyer,
     bc,
     data,
-    evmWeb3.utils.toWei(ethAmount, 'ether'))
+    ethAmount)
 
   console.log(`[DAVID](evmPFBuy) txHash =`, txHash)
   return txHash

@@ -3,6 +3,8 @@ import { signer } from ".";
 import { evmErc20Approve, evmPFBuy, evmPFCalcAmountEthForToken, evmPFCalcAmountTokenForNative, evmPFCreateToken, evmPFSell } from "../contract";
 import { evmTokenGetBalance, evmTokenGetDecimals } from "../token";
 import { evmWeb3 } from "../endpoint";
+import { LiquidityParam } from "../sdks/trade-joe/types";
+import { evmTrJoeAddLiquidity } from "../sdks/trade-joe/pool";
 // ------------- testnet(base) -------------
 // const BONDING_CURVE = "0x92b4b9Cdc87B90250561b354a7e659619f198fd0"
 // const token = "0xF4ea86B037258e8b3f0E78f96A651543912635A0"
@@ -14,7 +16,7 @@ import { evmWeb3 } from "../endpoint";
 const BONDING_CURVE = "0x8aA4cfC357390afB5dF17c35036A1b9d1EeC2Db6"
 const token = "0xB8D2D5635A076B6856e3A5Dd5A49E804FA51e8ff"
 
-export async function testContract() {
+async function testPumpFun() {
   // await evmPFCreateToken(signer, BONDING_CURVE, {
   //   name: 'test',
   //   symbol: 'test',
@@ -54,4 +56,38 @@ export async function testContract() {
     ethAmount,
     2 * 60
   )
+}
+
+async function testTraderJoe() {
+  const baseToken = "0x702DC8AfCc61d28dA5D8Fd131218fbe8DAF19CeC"
+  const quoteToken = "0x57eE725BEeB991c70c53f9642f36755EC6eb2139"
+  const lbRouter = "0xe20e58B747bC1E9753DF595D19001B366f49A78D"
+  const liquidityParams:LiquidityParam = {
+    tokenX: baseToken,
+    tokenY: quoteToken,
+    binStep: "1",
+    amountX: evmWeb3.utils.toWei(20, 'ether'),
+    amountY: evmWeb3.utils.toWei(20, 'ether'),
+    amountXMin: evmWeb3.utils.toWei(10, 'ether'),
+    amountYMin: evmWeb3.utils.toWei(10, 'ether'),
+    activeIdDesired: BigInt(2 ** 23).toString(),
+    idSlippage: 5,
+    deltaIds: [-1, 0, 1],
+    distributionX: [0, 1e18 / 2, 1e18 / 2],
+    distributionY: [(2 * 1e18) / 3, 1e18 / 3, 0],
+    to: signer.address,
+    refundTo: signer.address,
+    deadline: Math.floor(new Date().getTime() / 1000) + 3600
+  };
+
+  await evmErc20Approve(signer, baseToken, lbRouter, evmWeb3.utils.toWei(1000, 'ether'))
+  await evmErc20Approve(signer, quoteToken, lbRouter, evmWeb3.utils.toWei(1000, 'ether'))
+  await evmTrJoeAddLiquidity(
+    signer, 
+    lbRouter,
+    liquidityParams)
+}
+
+export async function testContract() {
+  await testTraderJoe()
 }
