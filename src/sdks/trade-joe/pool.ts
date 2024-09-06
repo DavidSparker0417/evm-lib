@@ -12,6 +12,13 @@ export async function evmTrJoeAddLiquidity(_sender: Web3Account|string, router: 
   return await evmContractSendTransaction(sender, router, txData)
 }
 
+export async function evmTrJoeRemoveLiquidity(_sender: Web3Account|string, router: string, param: LiquidityParam): Promise<string> {
+  const sender = evmAccount(_sender)
+  const contract = evmTrJoeLBContract(router)
+  const txData = contract.methods.removeLiquidity(param).encodeABI();
+  return await evmContractSendTransaction(sender, router, txData)
+}
+
 export async function evmTrJoeSwapExactTokensForTokens(
   _trader: Web3Account|string, 
   router: string,

@@ -4,7 +4,9 @@ import { evmErc20Approve, evmPFBuy, evmPFCalcAmountEthForToken, evmPFCalcAmountT
 import { evmTokenGetBalance, evmTokenGetDecimals } from "../token";
 import { evmWeb3 } from "../endpoint";
 import { LiquidityParam } from "../sdks/trade-joe/types";
-import { evmTrJoeAddLiquidity, evmTrJoeSwapExactTokensForTokens } from "../sdks/trade-joe/pool";
+import { evmTrJoeAddLiquidity, evmTrJoeRemoveLiquidity, evmTrJoeSwapExactTokensForTokens } from "../sdks/trade-joe/pool";
+import { evmtrPairApproveAll } from "../contract/traderjoe";
+
 // ------------- testnet(base) -------------
 // const BONDING_CURVE = "0x92b4b9Cdc87B90250561b354a7e659619f198fd0"
 // const token = "0xF4ea86B037258e8b3f0E78f96A651543912635A0"
@@ -88,6 +90,36 @@ async function traderJoeAddLiquidity() {
     liquidityParams)
 }
 
+async function testTraderJoeRemoveLiquidity() {
+  const baseToken = "0x702DC8AfCc61d28dA5D8Fd131218fbe8DAF19CeC"
+  const quoteToken = "0x57eE725BEeB991c70c53f9642f36755EC6eb2139"
+  const pairAddress = "0xa6d38002000409d9ddab4df90dc2432ad9c7d366"
+  const lbRouter = "0xe20e58B747bC1E9753DF595D19001B366f49A78D"
+  const liquidityParams:LiquidityParam = {
+    tokenX: baseToken,
+    tokenY: quoteToken,
+    binStep: "1",
+    amountX: evmWeb3.utils.toWei(20, 'ether'),
+    amountY: evmWeb3.utils.toWei(20, 'ether'),
+    amountXMin: evmWeb3.utils.toWei(10, 'ether'),
+    amountYMin: evmWeb3.utils.toWei(10, 'ether'),
+    activeIdDesired: BigInt(2 ** 23).toString(),
+    idSlippage: 5,
+    deltaIds: [-1, 0, 1],
+    distributionX: [0, 1e18 / 2, 1e18 / 2],
+    distributionY: [(2 * 1e18) / 3, 1e18 / 3, 0],
+    to: signer.address,
+    refundTo: signer.address,
+    deadline: Math.floor(new Date().getTime() / 1000) + 3600
+  };
+
+  await evmtrPairApproveAll(signer, pairAddress, lbRouter)
+  // await evmTrJoeRemoveLiquidity(
+  //   signer, 
+  //   lbRouter,
+  //   liquidityParams)
+}
+
 async function traderJoeSwap() {
   // await evmTrJoeSwapExactTokensForTokens(
   //   signer,
@@ -97,5 +129,6 @@ async function traderJoeSwap() {
 }
 
 export async function testContract() {
-  await traderJoeAddLiquidity()
+  // await testTraderJoeAddLiquidity()
+  await testTraderJoeRemoveLiquidity()
 }
