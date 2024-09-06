@@ -3,7 +3,7 @@ import { signer } from ".";
 import { evmErc20Approve, evmPFBuy, evmPFCalcAmountEthForToken, evmPFCalcAmountTokenForNative, evmPFCreateToken, evmPFSell } from "../contract";
 import { evmTokenGetBalance, evmTokenGetDecimals } from "../token";
 import { evmWeb3 } from "../endpoint";
-import { LiquidityParam } from "../sdks/trade-joe/types";
+import { LiquidityParam, RemoveLiquidityParam } from "../sdks/trade-joe/types";
 import { evmTrJoeAddLiquidity, evmTrJoeRemoveLiquidity, evmTrJoeSwapExactTokensForTokens } from "../sdks/trade-joe/pool";
 import { evmtrPairApproveAll } from "../contract/traderjoe";
 
@@ -95,29 +95,23 @@ async function testTraderJoeRemoveLiquidity() {
   const quoteToken = "0x57eE725BEeB991c70c53f9642f36755EC6eb2139"
   const pairAddress = "0xa6d38002000409d9ddab4df90dc2432ad9c7d366"
   const lbRouter = "0xe20e58B747bC1E9753DF595D19001B366f49A78D"
-  const liquidityParams:LiquidityParam = {
+  const liquidityParams:RemoveLiquidityParam = {
     tokenX: baseToken,
     tokenY: quoteToken,
     binStep: "1",
-    amountX: evmWeb3.utils.toWei(20, 'ether'),
-    amountY: evmWeb3.utils.toWei(20, 'ether'),
-    amountXMin: evmWeb3.utils.toWei(10, 'ether'),
-    amountYMin: evmWeb3.utils.toWei(10, 'ether'),
-    activeIdDesired: BigInt(2 ** 23).toString(),
-    idSlippage: 5,
-    deltaIds: [-1, 0, 1],
-    distributionX: [0, 1e18 / 2, 1e18 / 2],
-    distributionY: [(2 * 1e18) / 3, 1e18 / 3, 0],
+    amountXMin: evmWeb3.utils.toWei(0, 'ether'),
+    amountYMin: evmWeb3.utils.toWei(0, 'ether'),
+    ids: [2**23 - 1, 2**23, 2**23 + 1],
+    amounts: [evmWeb3.utils.toWei(1, 'ether'), evmWeb3.utils.toWei(1, 'ether'), evmWeb3.utils.toWei(1, 'ether')],
     to: signer.address,
-    refundTo: signer.address,
     deadline: Math.floor(new Date().getTime() / 1000) + 3600
   };
 
   await evmtrPairApproveAll(signer, pairAddress, lbRouter)
-  // await evmTrJoeRemoveLiquidity(
-  //   signer, 
-  //   lbRouter,
-  //   liquidityParams)
+  await evmTrJoeRemoveLiquidity(
+    signer, 
+    lbRouter,
+    liquidityParams)
 }
 
 async function traderJoeSwap() {
