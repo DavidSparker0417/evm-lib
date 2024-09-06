@@ -17,3 +17,9 @@ export interface LiquidityParam {
   refundTo: string,
   deadline: number
 }
+
+export interface JoePath {
+  pairBinSteps: Numbers[],
+  versions: number[],
+  tokenPath: string[]
+}

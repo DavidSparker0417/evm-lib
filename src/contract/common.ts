@@ -18,7 +18,8 @@ export async function evmContractSendTransaction(
       value
     })
 
-  const gasPrice = await evmWeb3.eth.getGasPrice()
+  let gasPrice = await evmWeb3.eth.getGasPrice()
+  gasPrice = (BigInt(gasPrice) * BigInt(1125)) / BigInt(1000);
   const tx:Transaction = {
     from: signer.address,
     to: contractAddr,

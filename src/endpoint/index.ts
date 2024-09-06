@@ -5,8 +5,8 @@ dotenv.config()
 
 export let evmWeb3:Web3
 
-if (process.env.PRC_URL)
-  evmRpcInit(process.env.PRC_URL)
+if (process.env.RPC_URL)
+  evmRpcInit(process.env.RPC_URL)
 
 export function evmRpcInit(rpcUrl: string) {
   evmWeb3 = new Web3(new Web3.providers.HttpProvider(rpcUrl))

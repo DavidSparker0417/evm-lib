@@ -3,7 +3,7 @@ import { evmTrJoeLBContract } from ".";
 import { evmContractSendTransaction } from "../../contract/common";
 import { Web3Account } from "../../types";
 import { evmAccount } from "../../wallet";
-import { LiquidityParam } from "./types";
+import { JoePath, LiquidityParam } from "./types";
 
 export async function evmTrJoeAddLiquidity(_sender: Web3Account|string, router: string, param: LiquidityParam): Promise<string> {
   const sender = evmAccount(_sender)
@@ -13,17 +13,23 @@ export async function evmTrJoeAddLiquidity(_sender: Web3Account|string, router: 
 }
 
 export async function evmTrJoeSwapExactTokensForTokens(
-  _sender: Web3Account|string, 
+  _trader: Web3Account|string, 
   router: string,
   amountIn: Numbers,
-  amountOutMin: Numbers
+  amountOutMin: Numbers,
+  tokenPath: JoePath,
+  to: string,
+  deadline: number = 0
 ): Promise<string> {
-  const sender = evmAccount(_sender)
+  const trader = evmAccount(_trader)
   const contract = evmTrJoeLBContract(router)
 
   const txData = contract.methods.swapExactTokensForTokens(
     amountIn,
-
+    amountOutMin,
+    tokenPath,
+    to,
+    deadline ? deadline : ((new Date()).getTime() / 1000) + 3600
   ).encodeABI()
-  return ''
+  return await evmContractSendTransaction(trader, router, txData)
 }

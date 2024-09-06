@@ -4,7 +4,7 @@ import { evmErc20Approve, evmPFBuy, evmPFCalcAmountEthForToken, evmPFCalcAmountT
 import { evmTokenGetBalance, evmTokenGetDecimals } from "../token";
 import { evmWeb3 } from "../endpoint";
 import { LiquidityParam } from "../sdks/trade-joe/types";
-import { evmTrJoeAddLiquidity } from "../sdks/trade-joe/pool";
+import { evmTrJoeAddLiquidity, evmTrJoeSwapExactTokensForTokens } from "../sdks/trade-joe/pool";
 // ------------- testnet(base) -------------
 // const BONDING_CURVE = "0x92b4b9Cdc87B90250561b354a7e659619f198fd0"
 // const token = "0xF4ea86B037258e8b3f0E78f96A651543912635A0"
@@ -58,10 +58,10 @@ async function testPumpFun() {
   )
 }
 
-async function testTraderJoe() {
+const lbRouter = "0xe20e58B747bC1E9753DF595D19001B366f49A78D"
+async function traderJoeAddLiquidity() {
   const baseToken = "0x702DC8AfCc61d28dA5D8Fd131218fbe8DAF19CeC"
   const quoteToken = "0x57eE725BEeB991c70c53f9642f36755EC6eb2139"
-  const lbRouter = "0xe20e58B747bC1E9753DF595D19001B366f49A78D"
   const liquidityParams:LiquidityParam = {
     tokenX: baseToken,
     tokenY: quoteToken,
@@ -88,6 +88,14 @@ async function testTraderJoe() {
     liquidityParams)
 }
 
+async function traderJoeSwap() {
+  // await evmTrJoeSwapExactTokensForTokens(
+  //   signer,
+  //   lbRouter,
+    
+  // )
+}
+
 export async function testContract() {
-  await testTraderJoe()
+  await traderJoeAddLiquidity()
 }
