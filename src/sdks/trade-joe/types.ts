@@ -18,6 +18,18 @@ export interface LiquidityParam {
   deadline: number
 }
 
+export interface RemoveLiquidityParam {
+  tokenX: string,
+  tokenY: string,
+  binStep: Numbers,
+  amountXMin: Numbers,
+  amountYMin: Numbers,
+  ids: number[],
+  amounts: Numbers[],
+  to: string,
+  deadline: number
+}
+
 export interface JoePath {
   pairBinSteps: Numbers[],
   versions: number[],

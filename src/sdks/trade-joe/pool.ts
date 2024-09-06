@@ -3,7 +3,7 @@ import { evmTrJoeLBContract } from ".";
 import { evmContractSendTransaction } from "../../contract/common";
 import { Web3Account } from "../../types";
 import { evmAccount } from "../../wallet";
-import { JoePath, LiquidityParam } from "./types";
+import { JoePath, LiquidityParam, RemoveLiquidityParam } from "./types";
 import { evmErc20Approve } from "../../contract";
 import { signer } from "../../test";
 
@@ -11,6 +11,13 @@ export async function evmTrJoeAddLiquidity(_sender: Web3Account|string, router: 
   const sender = evmAccount(_sender)
   const contract = evmTrJoeLBContract(router)
   const txData = contract.methods.addLiquidity(param).encodeABI();
+  return await evmContractSendTransaction(sender, router, txData)
+}
+
+export async function evmTrJoeRemoveLiquidity(_sender: Web3Account|string, router: string, param: RemoveLiquidityParam): Promise<string> {
+  const sender = evmAccount(_sender)
+  const contract = evmTrJoeLBContract(router)
+  const txData = contract.methods.removeLiquidity(param.tokenX, param.tokenY, param.binStep, param.amountXMin, param.amountYMin, param.ids, param.amounts, param.to, param.deadline).encodeABI();
   return await evmContractSendTransaction(sender, router, txData)
 }
 
