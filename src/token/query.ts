@@ -19,5 +19,6 @@ export async function evmTokenGetDecimals(token: string): Promise<number> {
   const contract = evmTokenContract(token)
   if (!contract)
     return 0
-  return Number(await contract.methods.decimals().call())
+  const decimals = Number(await contract.methods.decimals().call())
+  return decimals
 }

@@ -35,3 +35,16 @@ export interface JoePath {
   versions: number[],
   tokenPath: string[]
 }
+
+export interface PairInfo {
+  address: string,
+  binStep: number
+}
+
+export interface TrJoePoolInfo {
+  lpToken: string,
+  allocPoint: number,
+  lastRewardTimestamp: number,
+  accJoePerShare: number,
+  rewarder: string
+}

@@ -1,11 +1,15 @@
 import BigNumber from "bignumber.js";
-import { signer } from ".";
+import { curConfig, signer } from ".";
 import { evmErc20Approve, evmPFBuy, evmPFCalcAmountEthForToken, evmPFCalcAmountTokenForNative, evmPFCreateToken, evmPFSell } from "../contract";
-import { evmTokenGetBalance, evmTokenGetDecimals } from "../token";
+import { evmTokenAmount, evmTokenGetBalance, evmTokenGetDecimals } from "../token";
 import { evmWeb3 } from "../endpoint";
 import { LiquidityParam, RemoveLiquidityParam } from "../sdks/trade-joe/types";
-import { evmTrJoeAddLiquidity, evmTrJoeRemoveLiquidity, evmTrJoeSwapExactTokensForTokens } from "../sdks/trade-joe/pool";
+import { evmTrJoeGetSwapIn, evmTrJoeAddLiquidity, evmTrJoeGetFactory, evmTrJoeGetPairInfo, evmTrJoeGetPairs, evmTrJoeRemoveLiquidity, evmTrJoeSwapExactNATIVEForTokens, evmTrJoeSwapExactTokensForNATIVE, evmTrJoeSwapExactTokensForTokens, evmTrJoeGetSwapOut } from "../sdks/trade-joe/pool";
 import { evmtrPairApproveAll } from "../contract/traderjoe";
+import { Numbers } from "web3";
+import { evmTrJoeTokenMint } from "../sdks/trade-joe/joeToken";
+import { evmTrJoeMasterChefV2 } from "../sdks/trade-joe/masterChefV2";
+import { evmTrJoeLBPair } from "../sdks/trade-joe/lbPari";
 
 // ------------- testnet(base) -------------
 // const BONDING_CURVE = "0x92b4b9Cdc87B90250561b354a7e659619f198fd0"
@@ -90,10 +94,7 @@ async function traderJoeAddLiquidity() {
 }
 
 async function testTraderJoeRemoveLiquidity() {
-  const baseToken = "0x702DC8AfCc61d28dA5D8Fd131218fbe8DAF19CeC"
-  const quoteToken = "0x57eE725BEeB991c70c53f9642f36755EC6eb2139"
   const pairAddress = "0xa6d38002000409d9ddab4df90dc2432ad9c7d366"
-  const lbRouter = "0xe20e58B747bC1E9753DF595D19001B366f49A78D"
   const liquidityParams:RemoveLiquidityParam = {
     tokenX: baseToken,
     tokenY: quoteToken,
@@ -132,8 +133,88 @@ async function traderJoeSwap() {
   console.log(`[DAVID](trader-joe) Swap success: txHash =`, txHash)
 }
 
+async function traderJoeSwapNativeForToken() {
+  const txHash = await evmTrJoeSwapExactNATIVEForTokens(
+    signer,
+    lbRouter,
+    evmWeb3.utils.toWei("0.001", 'ether'),
+    "0",
+    {
+      pairBinSteps: [1],
+      versions: [3],
+      tokenPath: [quoteToken, baseToken]
+    },
+    signer.address
+  )
+  console.log(`[DAVID](trader-joe) Swap success: txHash =`, txHash)
+}
+
+async function traderJoeSwapTokenForNative() {
+  const token = curConfig.usdt
+  const [_, tokenBalance] = await evmTokenGetBalance(signer.address, token)
+  console.log(`[DAVID] token balance :`, tokenBalance)
+
+  await evmErc20Approve(signer, token, curConfig.traderJoe.router, tokenBalance)
+  const amountToSwap = await evmTokenAmount(token, 0.001)
+
+  const minAmountOut = await evmTrJoeGetSwapOut(
+    curConfig.traderJoe.router, 
+    curConfig.usdt,
+    curConfig.wNative,
+    amountToSwap,
+    true
+  )
+  console.log(`[DAVID](traderJoeSwapTokenForNative) estimated out amount : `, minAmountOut)
+  const txHash = await evmTrJoeSwapExactTokensForNATIVE(
+    signer,
+    curConfig.traderJoe.router,
+    amountToSwap,
+    minAmountOut,
+    {
+      pairBinSteps: [1],
+      versions: [3],
+      tokenPath: [baseToken, quoteToken]
+    },
+    signer.address
+  )
+  console.log(`[DAVID](trader-joe) Swap success: txHash =`, txHash)
+}
+
+async function traderJoeFetching() {
+  const base = curConfig.usdt
+  const wNative = curConfig.wNative
+
+  const pairInfo = await evmTrJoeGetPairInfo(
+    curConfig.traderJoe.router,
+    curConfig.usdc,
+    curConfig.wNative,
+    5
+  )
+
+  const pair = new evmTrJoeLBPair(pairInfo.address, signer)
+  console.log(await pair.getTokenX())
+
+  const activeId = await pair.getActiveId()
+  console.log(activeId)
+}
+
+async function traderJoeFarming() {
+  const masterChef = new evmTrJoeMasterChefV2(
+    curConfig.traderJoe.masterChefV2,
+    signer
+  )
+  const poolInfo = await masterChef.poolInfo(0)
+
+  const lpAmount = await evmTokenGetBalance(signer.address, poolInfo.lpToken)
+  console.log(lpAmount)
+}
+
 export async function testContract() {
   // await traderJoeAddLiquidity()
   // await testTraderJoeRemoveLiquidity()
-  await traderJoeSwap()
+  // await traderJoeSwap()
+  // await traderJoeSwapNativeForToken()
+  // await traderJoeSwapTokenForNative()
+  await traderJoeFetching()
+  // await traderJoeFarming()
 }
