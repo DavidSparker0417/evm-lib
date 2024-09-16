@@ -18,7 +18,6 @@ export async function evmTrSendTransaction(_sender: Web3Account | string, transa
   const signedTx = await evmWeb3.eth.accounts.signTransaction(transaction, sender.privateKey)
   const receipt = await evmWeb3.eth.sendSignedTransaction(signedTx.rawTransaction || '');
   await evmTrWaitReceipt(receipt.transactionHash.toString())
-  // console.log(rr)
   return receipt.transactionHash.toString()
 }
 

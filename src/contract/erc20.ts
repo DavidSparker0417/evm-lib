@@ -23,7 +23,7 @@ export function evmErc20Contract(contractAddr: string) {
 
 export async function evmErc20GetAllowance(tokenAddr: string, owner: string, spender: string): Promise<Numbers> {
   const contract = evmErc20Contract(tokenAddr)
-  const allowAmount:any = await contract.methods.allowance(spender, owner).call()
+  const allowAmount:any = await contract.methods.allowance(owner, spender).call()
   return allowAmount
 }
 

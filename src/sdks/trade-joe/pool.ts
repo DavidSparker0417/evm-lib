@@ -4,11 +4,161 @@ import { evmContractSendTransaction } from "../../contract/common";
 import { Web3Account } from "../../types";
 import { evmAccount } from "../../wallet";
 import { JoePath, LiquidityParam, PairInfo, RemoveLiquidityParam } from "./types";
+import { evmNetConfig } from "../../constants";
+import { EvmContract } from "../../contract";
+import { evmWeb3 } from "../../endpoint";
+import abi from "./abis/LBRouter.json"
+import { TrJoeLBPair } from "./lbPair";
+
+export class TrJoeRouter extends EvmContract {
+  constructor(address: string, signer: Web3Account | string) {
+    super(address, signer)
+    this.contract = new evmWeb3.eth.Contract(abi, address)
+  }
+
+  async addLiquidity(param: LiquidityParam): Promise<string> {
+    let txData: any
+    const pairInfo = await this.getPairInfo(param.tokenX, param.tokenY, param.binStep)
+    const pair = new TrJoeLBPair(pairInfo.address, this.signer)
+    if (param.tokenX === evmNetConfig.wNative || param.tokenY === evmNetConfig.wNative) {
+      txData = this.contract.methods.addLiquidityNATIVE(param).encodeABI();
+      const value = param.tokenX === evmNetConfig.wNative ? param.amountX : param.amountY
+      return await evmContractSendTransaction(this.signer, this.address, txData, value)
+    }
+
+    txData = this.contract.methods.addLiquidity(param).encodeABI();
+    return await evmContractSendTransaction(this.signer, this.address, txData)
+  }
+
+  async removeLiquidity(param: LiquidityParam): Promise<string> {
+    const txData = this.contract.methods.removeLiquidity(param).encodeABI()
+    return await evmContractSendTransaction(this.signer, this.address, txData)
+  }
+
+  async swapExactNATIVEForTokens(
+    amountInNative: Numbers,
+    amountOutMin: Numbers,
+    tokenPath: JoePath,
+    to: string,
+    deadline: number = 0
+  ): Promise<string> {
+    const txData = this.contract.methods.swapExactNATIVEForTokens(
+      amountOutMin,
+      tokenPath,
+      to,
+      deadline ? deadline : Math.floor((new Date()).getTime() / 1000) + 3600
+    ).encodeABI()
+    return await evmContractSendTransaction(this.signer, this.address, txData, amountInNative)
+  }
+
+  async swapExactTokensForNATIVE(
+    amountInToken: Numbers,
+    amountOutMinNative: Numbers,
+    tokenPath: JoePath,
+    to: string,
+    deadline: number = 0
+  ): Promise<string> {
+    const txData = this.contract.methods.swapExactTokensForNATIVE(
+      amountInToken,
+      amountOutMinNative,
+      tokenPath,
+      to,
+      deadline ? deadline : Math.floor((new Date()).getTime() / 1000) + 3600
+    ).encodeABI()
+    return await evmContractSendTransaction(this.signer, this.address, txData)
+  }
+
+  async swapExactTokensForTokens(
+    amountIn: Numbers,
+    amountOutMin: Numbers,
+    tokenPath: JoePath,
+    to: string,
+    deadline: number = 0
+  ): Promise<string> {
+    const txData = this.contract.methods.swapExactTokensForTokens(
+      amountIn,
+      amountOutMin,
+      tokenPath,
+      to,
+      deadline ? deadline : Math.floor((new Date()).getTime() / 1000) + 3600
+    ).encodeABI()
+    return await evmContractSendTransaction(this.signer, this.address, txData)
+  }
+
+  async getFactory(): Promise<string> {
+    return await this.contract.methods.getFactory().call()
+  }
+  
+  async getPairs(tokenX: string, tokenY: string): Promise<any[]> {
+    const factory: string = await this.getFactory()
+    const pairs: any = await evmTrJoeFactoryGetPairs(factory, tokenX, tokenY)
+    return pairs.map((pair: any) => ({
+      address: pair.LBPair,
+      binStep: Number(pair.binStep)
+    }))
+  }
+  
+  async getPairInfo(tokenX: string, tokenY: string, binStep: Numbers): Promise<PairInfo> {
+    const factory: string = await this.getFactory()
+    return await evmTrJoeFactoryGetPairInfo(
+      factory,
+      tokenX,
+      tokenY,
+      binStep
+    )
+  }
+  
+  async evmTrJoeGetSwapIn(
+    tokenX: string,
+    tokenY: string,
+    amountOut: Numbers,
+    swapForY: boolean,
+  ): Promise<any> {
+    const pairs: any[] = await this.getPairs(tokenX, tokenY)
+    for (const p of pairs) {
+      try {
+        const pair = await this.getPairInfo(tokenX, tokenY, p.binStep)
+        const amountIn: any = await this.contract.methods.getSwapIn(
+          pair.address,
+          amountOut,
+          swapForY
+        ).call()
+        return amountIn.amountIn
+      } catch (error) { }
+    }
+  }
+  
+  async evmTrJoeGetSwapOut(
+    tokenX: string,
+    tokenY: string,
+    amountIn: Numbers,
+    swapForY: boolean,
+  ): Promise<any> {
+    const pairs: any[] = await this.getPairs(tokenX, tokenY)
+    let resultAmount: any
+    for (const p of pairs) {
+      try {
+        const pair = await this.getPairInfo(tokenX, tokenY, p.binStep)
+        const amountOut: any = await this.contract.methods.getSwapOut(
+          pair.address,
+          amountIn,
+          swapForY
+        ).call()
+        resultAmount = amountOut.amountOut
+      } catch (error) { }
+    }
+    return resultAmount
+  }
+}
 
 export async function evmTrJoeAddLiquidity(_sender: Web3Account | string, router: string, param: LiquidityParam): Promise<string> {
   const sender = evmAccount(_sender)
   const contract = evmTrJoeLBContract(router)
-  const txData = contract.methods.addLiquidity(param).encodeABI();
+  let txData: any
+  if (param.tokenX === evmNetConfig.wNative || param.tokenY === evmNetConfig.wNative)
+    txData = contract.methods.addLiquidityNATIVE(param).encodeABI();
+  else
+    txData = contract.methods.addLiquidity(param).encodeABI();
   return await evmContractSendTransaction(sender, router, txData)
 }
 
@@ -129,8 +279,8 @@ export async function evmTrJoeGetSwapIn(
         amountOut,
         swapForY
       ).call()
-      return amountIn.amountIn 
-    } catch (error) {}
+      return amountIn.amountIn
+    } catch (error) { }
   }
 }
 
@@ -147,7 +297,7 @@ export async function evmTrJoeGetSwapOut(
     tokenX,
     tokenY)
 
-  let resultAmount:any
+  let resultAmount: any
   for (const p of pairs) {
     try {
       const pair = await evmTrJoeGetPairInfo(router, tokenX, tokenY, p.binStep)
@@ -156,8 +306,8 @@ export async function evmTrJoeGetSwapOut(
         amountIn,
         swapForY
       ).call()
-      resultAmount = amountOut.amountOut 
-    } catch (error) {}
+      resultAmount = amountOut.amountOut
+    } catch (error) { }
   }
   return resultAmount
 }

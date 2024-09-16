@@ -2,15 +2,14 @@ import { Numbers, Transaction } from "web3";
 import { Web3Account } from "../types";
 import { evmWeb3 } from "../endpoint";
 import { evmTrSendTransaction } from "../transaction";
-import { evmWalletGetBalance } from "../wallet";
+import { evmAccount, evmWalletGetBalance } from "../wallet";
 
 export async function evmContractSendTransaction(
-  signer: Web3Account, 
+  signer: Web3Account,
   contractAddr: string,
   callData: any,
   value: Numbers = "0"
 ) {
-
   const gasEstimate = await evmWeb3.eth.estimateGas(
     {
       from: signer.address,
@@ -27,7 +26,7 @@ export async function evmContractSendTransaction(
   const balance = await evmWalletGetBalance(signer.address)
   if (balance < Number(gasConsumedAmount))
     throw new Error('Insufficient balance to pay gas.')
-  const tx:Transaction = {
+  const tx: Transaction = {
     from: signer.address,
     to: contractAddr,
     gas: gasEstimate,
@@ -35,5 +34,6 @@ export async function evmContractSendTransaction(
     data: callData,
     value
   }
+
   return await evmTrSendTransaction(signer, tx)
 }

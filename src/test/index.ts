@@ -4,13 +4,11 @@ import { evmRpcInit } from '../endpoint';
 import { evmWalletImport } from '../wallet';
 import { testContract } from './contract';
 import { testToken } from './token';
-import { globalConfig } from './config';
+import { evmNetConfig } from '../constants';
 
-export const network = 'sei_mainnet' //"sei_devnet"
-export const curConfig = globalConfig[network]
 dotenv.config()
 
-evmRpcInit(curConfig.rpc)
+evmRpcInit(evmNetConfig.rpc)
 
 export const signer = evmWalletImport(process.env.PRIVATE_KEY!)
 async function test() {

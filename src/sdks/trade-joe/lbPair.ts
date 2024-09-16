@@ -6,7 +6,7 @@ import { evmContractSendTransaction } from "../../contract/common";
 import { evmWeb3 } from '../../endpoint/index';
 import { TrJoePoolInfo } from "./types";
 
-export class evmTrJoeLBPair {
+export class TrJoeLBPair {
   
   private contract: Contract<ContractAbi>
   private signer: Web3Account|undefined
@@ -24,5 +24,9 @@ export class evmTrJoeLBPair {
 
   async getActiveId(): Promise<string> {
     return await this.contract.methods.getActiveId().call()
+  }
+
+  async getBinStep(): Promise<string> {
+    return await this.contract.methods.getBinStep().call()
   }
 }

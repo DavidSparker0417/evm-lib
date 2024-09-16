@@ -1,16 +1,17 @@
 import BigNumber from "bignumber.js";
-import { curConfig, signer } from ".";
+import { signer } from ".";
 import { evmErc20Approve, evmPFBuy, evmPFCalcAmountEthForToken, evmPFCalcAmountTokenForNative, evmPFCreateToken, evmPFSell } from "../contract";
 import { evmTokenAmount, evmTokenGetBalance, evmTokenGetDecimals } from "../token";
 import { evmWeb3 } from "../endpoint";
 import { LiquidityParam, RemoveLiquidityParam } from "../sdks/trade-joe/types";
-import { evmTrJoeGetSwapIn, evmTrJoeAddLiquidity, evmTrJoeGetFactory, evmTrJoeGetPairInfo, evmTrJoeGetPairs, evmTrJoeRemoveLiquidity, evmTrJoeSwapExactNATIVEForTokens, evmTrJoeSwapExactTokensForNATIVE, evmTrJoeSwapExactTokensForTokens, evmTrJoeGetSwapOut } from "../sdks/trade-joe/pool";
+import { evmTrJoeGetSwapIn, evmTrJoeAddLiquidity, evmTrJoeGetFactory, evmTrJoeGetPairInfo, evmTrJoeGetPairs, evmTrJoeRemoveLiquidity, evmTrJoeSwapExactNATIVEForTokens, evmTrJoeSwapExactTokensForNATIVE, evmTrJoeSwapExactTokensForTokens, evmTrJoeGetSwapOut, TrJoeRouter } from "../sdks/trade-joe/pool";
 import { evmtrPairApproveAll } from "../contract/traderjoe";
 import { Numbers } from "web3";
-import { evmTrJoeTokenMint } from "../sdks/trade-joe/joeToken";
+// import { evmTrJoeTokenMint } from "../sdks/trade-joe/joeToken";
 import { evmTrJoeMasterChefV2 } from "../sdks/trade-joe/masterChefV2";
-import { evmTrJoeLBPair } from "../sdks/trade-joe/lbPari";
-
+import { TrJoeLBPair } from "../sdks/trade-joe/lbPair";
+import { evmNetConfig } from "../constants";
+import { TrJoeFactory } from "../sdks";
 // ------------- testnet(base) -------------
 // const BONDING_CURVE = "0x92b4b9Cdc87B90250561b354a7e659619f198fd0"
 // const token = "0xF4ea86B037258e8b3f0E78f96A651543912635A0"
@@ -54,8 +55,8 @@ async function testPumpFun() {
   let ethAmount = BigInt(await evmPFCalcAmountEthForToken(BONDING_CURVE, token, amountToken))
   ethAmount = BigInt((new BigNumber(ethAmount.toString()).multipliedBy(100 - slippage)).dividedBy(100).toFixed(0))
   await evmPFSell(
-    signer, 
-    BONDING_CURVE, 
+    signer,
+    BONDING_CURVE,
     token,
     amountToken,
     ethAmount,
@@ -63,45 +64,50 @@ async function testPumpFun() {
   )
 }
 
-const lbRouter = "0xe20e58B747bC1E9753DF595D19001B366f49A78D"
-const baseToken = "0x702DC8AfCc61d28dA5D8Fd131218fbe8DAF19CeC"
-const quoteToken = "0x57eE725BEeB991c70c53f9642f36755EC6eb2139"
+const lbRouter = evmNetConfig.traderJoe.router
+const baseToken = evmNetConfig.usdc
+const quoteToken = evmNetConfig.wNative
+
 async function traderJoeAddLiquidity() {
-  const liquidityParams:LiquidityParam = {
+  const [tBalance, tokenBalance] = await evmTokenGetBalance(signer.address, baseToken)
+  const decimals = await evmTokenGetDecimals(baseToken)
+  const amountX = (tBalance > 0.001) ? evmWeb3.utils.toWei(0.001, decimals) : tokenBalance
+  const router = new TrJoeRouter(lbRouter, signer)
+  const deadline = Math.floor(new Date().getTime() / 1000) + 3600
+  console.log(`[DAVID] deadline : `, deadline)
+  const liquidityParams: LiquidityParam = {
     tokenX: baseToken,
     tokenY: quoteToken,
     binStep: "1",
-    amountX: evmWeb3.utils.toWei(20, 'ether'),
-    amountY: evmWeb3.utils.toWei(20, 'ether'),
-    amountXMin: evmWeb3.utils.toWei(10, 'ether'),
-    amountYMin: evmWeb3.utils.toWei(10, 'ether'),
-    activeIdDesired: BigInt(2 ** 23).toString(),
+    amountX: amountX,
+    amountY: evmWeb3.utils.toWei(0.001, 'ether'),
+    amountXMin: "0",
+    amountYMin: "0",
+    activeIdDesired: BigInt(8388608).toString(),
     idSlippage: 5,
     deltaIds: [-1, 0, 1],
     distributionX: [0, 1e18 / 2, 1e18 / 2],
     distributionY: [(2 * 1e18) / 3, 1e18 / 3, 0],
     to: signer.address,
     refundTo: signer.address,
-    deadline: Math.floor(new Date().getTime() / 1000) + 3600
+    deadline
   };
 
   await evmErc20Approve(signer, baseToken, lbRouter, evmWeb3.utils.toWei(1000, 'ether'))
   await evmErc20Approve(signer, quoteToken, lbRouter, evmWeb3.utils.toWei(1000, 'ether'))
-  await evmTrJoeAddLiquidity(
-    signer, 
-    lbRouter,
-    liquidityParams)
+  const txHash = await router.addLiquidity(liquidityParams)
+  console.log(`[DAVID] Add liquidity succeeded. txHash :`, txHash)
 }
 
 async function testTraderJoeRemoveLiquidity() {
   const pairAddress = "0xa6d38002000409d9ddab4df90dc2432ad9c7d366"
-  const liquidityParams:RemoveLiquidityParam = {
+  const liquidityParams: RemoveLiquidityParam = {
     tokenX: baseToken,
     tokenY: quoteToken,
     binStep: "1",
     amountXMin: evmWeb3.utils.toWei(0, 'ether'),
     amountYMin: evmWeb3.utils.toWei(0, 'ether'),
-    ids: [2**23 - 1, 2**23, 2**23 + 1],
+    ids: [2 ** 23 - 1, 2 ** 23, 2 ** 23 + 1],
     amounts: [evmWeb3.utils.toWei(1, 'ether'), evmWeb3.utils.toWei(1, 'ether'), evmWeb3.utils.toWei(1, 'ether')],
     to: signer.address,
     deadline: Math.floor(new Date().getTime() / 1000) + 3600
@@ -109,7 +115,7 @@ async function testTraderJoeRemoveLiquidity() {
 
   await evmtrPairApproveAll(signer, pairAddress, lbRouter)
   await evmTrJoeRemoveLiquidity(
-    signer, 
+    signer,
     lbRouter,
     liquidityParams)
 }
@@ -150,24 +156,24 @@ async function traderJoeSwapNativeForToken() {
 }
 
 async function traderJoeSwapTokenForNative() {
-  const token = curConfig.usdt
+  const token = evmNetConfig.usdt
   const [_, tokenBalance] = await evmTokenGetBalance(signer.address, token)
   console.log(`[DAVID] token balance :`, tokenBalance)
 
-  await evmErc20Approve(signer, token, curConfig.traderJoe.router, tokenBalance)
+  await evmErc20Approve(signer, token, evmNetConfig.traderJoe.router, tokenBalance)
   const amountToSwap = await evmTokenAmount(token, 0.001)
 
   const minAmountOut = await evmTrJoeGetSwapOut(
-    curConfig.traderJoe.router, 
-    curConfig.usdt,
-    curConfig.wNative,
+    evmNetConfig.traderJoe.router,
+    evmNetConfig.usdt,
+    evmNetConfig.wNative,
     amountToSwap,
     true
   )
   console.log(`[DAVID](traderJoeSwapTokenForNative) estimated out amount : `, minAmountOut)
   const txHash = await evmTrJoeSwapExactTokensForNATIVE(
     signer,
-    curConfig.traderJoe.router,
+    evmNetConfig.traderJoe.router,
     amountToSwap,
     minAmountOut,
     {
@@ -181,17 +187,17 @@ async function traderJoeSwapTokenForNative() {
 }
 
 async function traderJoeFetching() {
-  const base = curConfig.usdt
-  const wNative = curConfig.wNative
+  const base = evmNetConfig.usdt
+  const wNative = evmNetConfig.wNative
 
   const pairInfo = await evmTrJoeGetPairInfo(
-    curConfig.traderJoe.router,
-    curConfig.usdc,
-    curConfig.wNative,
+    evmNetConfig.traderJoe.router,
+    evmNetConfig.usdc,
+    evmNetConfig.wNative,
     5
   )
 
-  const pair = new evmTrJoeLBPair(pairInfo.address, signer)
+  const pair = new TrJoeLBPair(pairInfo.address, signer)
   console.log(await pair.getTokenX())
 
   const activeId = await pair.getActiveId()
@@ -200,7 +206,7 @@ async function traderJoeFetching() {
 
 async function traderJoeFarming() {
   const masterChef = new evmTrJoeMasterChefV2(
-    curConfig.traderJoe.masterChefV2,
+    evmNetConfig.traderJoe.masterChefV2,
     signer
   )
   const poolInfo = await masterChef.poolInfo(0)
@@ -209,12 +215,39 @@ async function traderJoeFarming() {
   console.log(lpAmount)
 }
 
+async function traderJoeCreatePair() {
+  const factory = new TrJoeFactory(evmNetConfig.traderJoe.factory, signer)
+  const txHash = await factory.createLBPair(
+    evmNetConfig.usdc,
+    evmNetConfig.wNative,
+    "8388608",
+    1
+  )
+  console.log(`[DAVID] Pair created! txHash :`, txHash)
+}
+
+async function traderAddQuoteAssets() {
+  const factory = new TrJoeFactory(evmNetConfig.traderJoe.factory, signer)
+  let txHash = await factory.addQuoteAsset(
+    evmNetConfig.usdc
+  )
+  console.log(`[DAVID] Quote asset (${evmNetConfig.usdc}) added. txHash:`, txHash)
+  txHash = await factory.addQuoteAsset(
+    evmNetConfig.wNative
+  )
+  console.log(`[DAVID] Quote asset (${evmNetConfig.wNative}) added. txHash:`, txHash)
+}
 export async function testContract() {
-  // await traderJoeAddLiquidity()
+  // 1. add quote assets
+  await traderAddQuoteAssets()
+  // 2. create pair
+  await traderJoeCreatePair()
+  // 3. add liquidity
+  await traderJoeAddLiquidity()
   // await testTraderJoeRemoveLiquidity()
   // await traderJoeSwap()
   // await traderJoeSwapNativeForToken()
   // await traderJoeSwapTokenForNative()
-  await traderJoeFetching()
+  // await traderJoeFetching()
   // await traderJoeFarming()
 }
