@@ -1,5 +1,5 @@
 import { Numbers } from "web3";
-import { evmTrJoeFactoryGetPairInfo, evmTrJoeFactoryGetPairs, evmTrJoeLBContract } from ".";
+import { evmTrJoeFactoryGetPairInfo, evmTrJoeFactoryGetPairs, evmTrJoeLBContract, TrJoeFactory } from ".";
 import { evmContractSendTransaction } from "../../contract/common";
 import { Web3Account } from "../../types";
 import { evmAccount } from "../../wallet";
@@ -9,6 +9,7 @@ import { EvmContract } from "../../contract";
 import { evmWeb3 } from "../../endpoint";
 import abi from "./abis/LBRouter.json"
 import { TrJoeLBPair } from "./lbPair";
+import { factory } from 'typescript';
 
 export class TrJoeRouter extends EvmContract {
   constructor(address: string, signer: Web3Account | string) {
@@ -99,13 +100,31 @@ export class TrJoeRouter extends EvmContract {
   }
   
   async getPairInfo(tokenX: string, tokenY: string, binStep: Numbers): Promise<PairInfo> {
-    const factory: string = await this.getFactory()
-    return await evmTrJoeFactoryGetPairInfo(
-      factory,
+    const factoryAddr: string = await this.getFactory()
+    const factory = new TrJoeFactory(factoryAddr, this.signer)
+    return await factory.getPairInfo(
       tokenX,
       tokenY,
       binStep
     )
+  }
+
+  async getAllPairs(): Promise<PairInfo[]> {
+    const factoryAddr = await this.getFactory()
+    const factory = new TrJoeFactory(factoryAddr, this.signer)
+    const pairCount = await factory.getNumberOfLBPairs()
+    const pairs: PairInfo[] = []
+    for(let i = 0; i < pairCount; i ++) {
+      const pairAddr = await factory.getLBPairAtIndex(i)
+      const pair = new TrJoeLBPair(pairAddr, this.signer)
+      pairs.push({
+        address: pairAddr,
+        binStep: Number(await pair.getBinStep()),
+        tokenX: await pair.getTokenX(),
+        tokenY: await pair.getTokenY(),
+      })
+    }
+    return pairs
   }
   
   async evmTrJoeGetSwapIn(
@@ -128,7 +147,7 @@ export class TrJoeRouter extends EvmContract {
     }
   }
   
-  async evmTrJoeGetSwapOut(
+  async getSwapOut(
     tokenX: string,
     tokenY: string,
     amountIn: Numbers,
@@ -148,6 +167,12 @@ export class TrJoeRouter extends EvmContract {
       } catch (error) { }
     }
     return resultAmount
+  }
+
+  async getLpBalance(who: string, tokenX: string, tokenY: string, binStep: Numbers): Promise<Numbers> {
+    const pairInfo = await this.getPairInfo(tokenX, tokenY, binStep)
+    const pair = new TrJoeLBPair(pairInfo.address, this.signer)
+    return await pair.balanceOf(who, pairInfo.activeId!)
   }
 }
 

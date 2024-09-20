@@ -1,13 +1,22 @@
 import { evmTrJoeStaking } from ".";
+import { EvmContract } from "../../contract";
 import { evmContractSendTransaction } from "../../contract/common";
+import { evmWeb3 } from "../../endpoint";
+import { evmTokenGetBalance } from "../../token";
 import { Web3Account } from "../../types";
 import { evmAccount } from "../../wallet";
+import abi from "./abis/StableJoeStaking.json"
 
-export async function evmTrJoeStakingDeposit(_signer: Web3Account|string, stakeContract:string, amount: number) {
-  const contract = evmTrJoeStaking(stakeContract)
-  const signer = evmAccount(_signer)
+export class TrJoeStableJoeStaking extends EvmContract{
+  constructor(addresss:string, signer: Web3Account|string) {
+    super(addresss, signer)
+    this.contract = new evmWeb3.eth.Contract(abi, addresss)
+  }
 
-  const txData = contract.methods.deposit(amount).encodeABI()
-  const txHash = await evmContractSendTransaction(signer, stakeContract, txData)
-  return txHash
+  async deposit(amount: number): Promise<string> {
+    const txData = this.contract.methods.deposit(amount).encodeABI()
+    const txHash = await evmContractSendTransaction(this.signer, this.address, txData)
+    return txHash
+  }
 }
+

@@ -3,14 +3,14 @@ import { signer } from ".";
 import { evmErc20Approve, evmPFBuy, evmPFCalcAmountEthForToken, evmPFCalcAmountTokenForNative, evmPFCreateToken, evmPFSell } from "../contract";
 import { evmTokenAmount, evmTokenGetBalance, evmTokenGetDecimals } from "../token";
 import { evmWeb3 } from "../endpoint";
-import { LiquidityParam, RemoveLiquidityParam } from "../sdks/trade-joe/types";
+import { LiquidityParam, RemoveLiquidityParam, TrJoePoolInfo } from "../sdks/trade-joe/types";
 import { evmTrJoeGetSwapIn, evmTrJoeAddLiquidity, evmTrJoeGetFactory, evmTrJoeGetPairInfo, evmTrJoeGetPairs, evmTrJoeRemoveLiquidity, evmTrJoeSwapExactNATIVEForTokens, evmTrJoeSwapExactTokensForNATIVE, evmTrJoeSwapExactTokensForTokens, evmTrJoeGetSwapOut, TrJoeRouter } from "../sdks/trade-joe/pool";
 import { evmtrPairApproveAll } from "../contract/traderjoe";
 import { Numbers } from "web3";
 // import { evmTrJoeTokenMint } from "../sdks/trade-joe/joeToken";
-import { evmTrJoeMasterChefV2 } from "../sdks/trade-joe/masterChefV2";
+import { TrJoeMasterChefV2 } from "../sdks/trade-joe/masterChefV2";
 import { TrJoeLBPair } from "../sdks/trade-joe/lbPair";
-import { evmNetConfig } from "../constants";
+import { evmNetConfig, ZERO_ADRESS } from "../constants";
 import { TrJoeFactory } from "../sdks";
 // ------------- testnet(base) -------------
 // const BONDING_CURVE = "0x92b4b9Cdc87B90250561b354a7e659619f198fd0"
@@ -204,15 +204,39 @@ async function traderJoeFetching() {
   console.log(activeId)
 }
 
-async function traderJoeFarming() {
-  const masterChef = new evmTrJoeMasterChefV2(
-    evmNetConfig.traderJoe.masterChefV2,
+async function traderJoePairInfo() {
+  const router = new TrJoeRouter(
+    evmNetConfig.traderJoe.router,
     signer
   )
-  const poolInfo = await masterChef.poolInfo(0)
 
-  const lpAmount = await evmTokenGetBalance(signer.address, poolInfo.lpToken)
-  console.log(lpAmount)
+  const pairs = await router.getAllPairs()
+  console.log(pairs)
+}
+
+async function traderJoeFarming() {
+  const tokenX = evmNetConfig.usdc
+  const tokenY = evmNetConfig.wNative
+  const binStep = 1;
+  // 1.get the usdc-wNative lp
+  const router = new TrJoeRouter(evmNetConfig.traderJoe.router, signer)
+  // 1.1. check lp balance
+  const lpBalance = await router.getLpBalance(signer.address, tokenX, tokenY, binStep)
+  console.log(`[DAVID] (usdc-native) lp balance =`, lpBalance)
+  if (!lpBalance) {
+    console.log(`[DAVID] Insufficient balance to deposit`)
+    return
+  }
+  // 2. deposit lp to master chef usdc-wNative lp
+  const masterChefV2 = new TrJoeMasterChefV2(
+    evmNetConfig.traderJoe.MasterChefJoeV2,
+    signer
+  )
+  // 2.1 get pool list
+  const poolId = await masterChefV2.findPoolId(tokenX, tokenY, 1)
+  console.log(`[DAVID] Depositing lp to pool(${poolId}) ...`)
+  const txHash = await masterChefV2.deposit(poolId, lpBalance)
+  console.log(`[DAVID] deposit succeeded. txHash = ${txHash}`)
 }
 
 async function traderJoeCreatePair() {
@@ -237,17 +261,29 @@ async function traderAddQuoteAssets() {
   )
   console.log(`[DAVID] Quote asset (${evmNetConfig.wNative}) added. txHash:`, txHash)
 }
+
+async function traderJoeFarmPoolAdd() {
+  const masterChefV2 = new TrJoeMasterChefV2(evmNetConfig.traderJoe.MasterChefJoeV2, signer)
+  const router = new TrJoeRouter(evmNetConfig.traderJoe.router, signer)
+  const pairInfo =  await router.getPairInfo(
+    evmNetConfig.usdc, evmNetConfig.wNative, 1
+  )
+  await masterChefV2.addPool(1, pairInfo.address, ZERO_ADRESS)
+}
 export async function testContract() {
   // 1. add quote assets
-  await traderAddQuoteAssets()
+  // await traderAddQuoteAssets()
   // 2. create pair
-  await traderJoeCreatePair()
+  // await traderJoeCreatePair()
   // 3. add liquidity
-  await traderJoeAddLiquidity()
+  // await traderJoeAddLiquidity()
+  // 4. add lp token of the pool
+  // await traderJoeFarmPoolAdd()
   // await testTraderJoeRemoveLiquidity()
   // await traderJoeSwap()
   // await traderJoeSwapNativeForToken()
   // await traderJoeSwapTokenForNative()
   // await traderJoeFetching()
-  // await traderJoeFarming()
+  // await traderJoePairInfo()
+  await traderJoeFarming()
 }

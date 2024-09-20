@@ -38,7 +38,10 @@ export interface JoePath {
 
 export interface PairInfo {
   address: string,
-  binStep: number
+  binStep: number,
+  tokenX?: string|undefined,
+  tokenY?: string|undefined,
+  activeId?: Numbers
 }
 
 export interface TrJoePoolInfo {

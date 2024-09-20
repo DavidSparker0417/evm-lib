@@ -1,3 +1,5 @@
+import { factory } from "typescript"
+
 export const ZERO_ADRESS = "0x0000000000000000000000000000000000000000"
 
 const netConfigs = {
@@ -7,7 +9,10 @@ const netConfigs = {
     usdt: "0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7",
     usdc: "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
     traderJoe: {
-      router: "0x18556DA13313f3532c54711497A8FedAC273220E"
+      router: "0x18556DA13313f3532c54711497A8FedAC273220E",
+      joeToken: "0x6e84a6216eA6dACC71eE8E6b0a5B7322EEbC0fDd",
+      MasterChefJoeV2: "0xd6a4F121CA35509aF06A0Be99093d08462f53052",
+      factory: "0xb43120c4745967fa9b93E79C149E66B0f2D6Fe0c"
     }
   },
   sei_devnet: {
@@ -18,7 +23,9 @@ const netConfigs = {
     traderJoe: {
       router: "0xe20e58B747bC1E9753DF595D19001B366f49A78D",
       joeToken: "0x9C178e5771BF5402888ac9B637B95f7F1cA7b66D",
-      masterChefV2: "0xFF418410053701626430d7c0AAd8207d6Ea6C800",
+      MasterChefJoeV2: "0xFF418410053701626430d7c0AAd8207d6Ea6C800",
+      factory: "0x8331B3EaDd81b00AA2bAD2f7F338010279b242dE",
+      sJoeStaking: "0xacf3eC6DDf5E74f0e864A01B0cBa336ac0CdB9cC"
     }
   },
   sei_mainnet: {
@@ -28,8 +35,8 @@ const netConfigs = {
     usdc: "0x3894085Ef7Ff0f0aeDf52E2A2704928d1Ec074F1",
     traderJoe: {
       router: "0xE70Ff562527Ba77000a0EDE7c9F7711200b59d05",
-      joeToken: "",
-      masterChefV2: "",
+      joeToken: "0xdDB63C3576aE64aec4B6c04d1c1418CB6368Ad67",
+      MasterChefJoeV2: "0x867A553146BFe10bC8B5761d1B600f76d00a5038",
       factory: "0x0333fD6E26032a80d93DC1cdA70b964b0B174362"
     },
     wallets: {
@@ -38,6 +45,6 @@ const netConfigs = {
   },
 }
 
-const network = 'sei_mainnet'
+const network = 'sei_devnet'
 
 export const evmNetConfig = netConfigs[network]

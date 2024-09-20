@@ -27,7 +27,7 @@ export async function evmTrBuildTransferNative(sender: string, receiver: string,
   let gasLimit = 21000
 
   // increase gas price
-  gasPrice = (BigInt(gasPrice) * BigInt(2000)) / BigInt(1000);
+  gasPrice = (BigInt(gasPrice) * BigInt(1125)) / BigInt(1000);
 
   let amountInWei: BigInt
   if (amount)

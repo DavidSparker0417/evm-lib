@@ -7,6 +7,7 @@ import { Web3Account } from "../../types";
 import { evmWeb3 } from "../../endpoint";
 import abi from "../trade-joe/abis/LBFactory.json"
 import { evmContractSendTransaction } from "../../contract/common";
+import { TrJoeLBPair } from './lbPair';
 
 export class TrJoeFactory extends EvmContract {
   constructor(address: string, signer: Web3Account | string) {
@@ -18,16 +19,27 @@ export class TrJoeFactory extends EvmContract {
     return await this.contract.methods.getAllLBPairs(tokenX, tokenY).call()
   }
 
+  async getNumberOfLBPairs(): Promise<any> {
+    return await this.contract.methods.getNumberOfLBPairs().call()
+  }
+
+  async getLBPairAtIndex(index: Numbers): Promise<any> {
+    return await this.contract.methods.getLBPairAtIndex(index).call()
+  }
+
   async getPairInfo(
     tokenX: string,
     tokenY: string,
     binStep: Numbers): Promise<PairInfo> {
-    const pair: any = await this.contract.methods.getLBPairInformation(tokenX, tokenY, binStep.toString()).call()
-    if (pair.LBPair === ZERO_ADRESS)
+    const pairInfo: any = await this.contract.methods.getLBPairInformation(tokenX, tokenY, binStep.toString()).call()
+    if (pairInfo.LBPair === ZERO_ADRESS)
       throw new Error(`[DAVID] Error! pair not exist!`)
+    const pair = new TrJoeLBPair(pairInfo.LBPair, this.signer)
     return {
-      address: pair.LBPair,
-      binStep: Number(pair.binStep)
+      address: pairInfo.LBPair,
+      binStep: Number(pairInfo.binStep),
+      tokenX, tokenY,
+      activeId: await pair.getActiveId()
     }
   }
 
@@ -65,6 +77,8 @@ export async function evmTrJoeFactoryGetPairInfo(
     throw new Error(`[DAVID] Error! pair not exist!`)
   return {
     address: pair.LBPair,
-    binStep: Number(pair.binStep)
+    binStep: Number(pair.binStep),
+    tokenX: tokenX,
+    tokenY: tokenY
   }
 }

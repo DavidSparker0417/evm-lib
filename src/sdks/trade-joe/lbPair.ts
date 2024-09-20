@@ -22,11 +22,19 @@ export class TrJoeLBPair {
     return await this.contract.methods.getTokenX().call()
   }
 
+  async getTokenY(): Promise<string> {
+    return await this.contract.methods.getTokenY().call()
+  }
+
   async getActiveId(): Promise<string> {
     return await this.contract.methods.getActiveId().call()
   }
 
   async getBinStep(): Promise<string> {
     return await this.contract.methods.getBinStep().call()
+  }
+
+  async balanceOf(address: string, id: Numbers): Promise<Numbers> {
+    return await this.contract.methods.balanceOf(address, id).call()
   }
 }

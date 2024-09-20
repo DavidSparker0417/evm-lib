@@ -45,7 +45,7 @@ export async function evmErc20Approve(_signer: Web3Account|string, tokenAddr: st
 }
 
 export async function evmErc20GetMeta(addr: string): Promise<TokenMeta> {
-  console.log(`[DAVID](EVM-LIB)(evmErc20GetMeta) addr :`, addr)
+  // console.log(`[DAVID](EVM-LIB)(evmErc20GetMeta) addr :`, addr)
   const contract = evmErc20Contract(addr) 
   const name:any = await contract.methods.name().call()
   const decimals:any = await contract.methods.decimals().call()
