@@ -242,7 +242,7 @@ async function traderJoeFarming() {
 async function traderJoeCreatePair() {
   const factory = new TrJoeFactory(evmNetConfig.traderJoe.factory, signer)
   const txHash = await factory.createLBPair(
-    evmNetConfig.usdc,
+    evmNetConfig.usdt,
     evmNetConfig.wNative,
     "8388608",
     1
@@ -262,6 +262,14 @@ async function traderAddQuoteAssets() {
   console.log(`[DAVID] Quote asset (${evmNetConfig.wNative}) added. txHash:`, txHash)
 }
 
+async function traderSetPresetOpenState() {
+  const factory = new TrJoeFactory(evmNetConfig.traderJoe.factory, signer)
+  let txHash = await factory.setPresetOpenState(
+    25, true
+  )
+  console.log(`[DAVID] Set PresetOpenState. txHash:`, txHash);
+}
+
 async function traderJoeFarmPoolAdd() {
   const masterChefV2 = new TrJoeMasterChefV2(evmNetConfig.traderJoe.MasterChefJoeV2, signer)
   const router = new TrJoeRouter(evmNetConfig.traderJoe.router, signer)
@@ -271,6 +279,8 @@ async function traderJoeFarmPoolAdd() {
   await masterChefV2.addPool(1, pairInfo.address, ZERO_ADRESS)
 }
 export async function testContract() {
+  // 0. set preset open state
+    await traderSetPresetOpenState();
   // 1. add quote assets
   // await traderAddQuoteAssets()
   // 2. create pair
@@ -285,5 +295,5 @@ export async function testContract() {
   // await traderJoeSwapTokenForNative()
   // await traderJoeFetching()
   // await traderJoePairInfo()
-  await traderJoeFarming()
+  // await traderJoeFarming()
 }

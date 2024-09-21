@@ -58,6 +58,12 @@ export class TrJoeFactory extends EvmContract {
     const txData = this.contract.methods.addQuoteAsset(quoteAsset).encodeABI()
     return await evmContractSendTransaction(this.signer, this.address, txData)
   }
+
+  async setPresetOpenState(binStep: Numbers, isOpen: Boolean): Promise<string> {
+    console.log(`[DAVID] Setting preset open state (${binStep}) ...`)
+    const txData = this.contract.methods.setPresetOpenState(binStep, isOpen).encodeABI()
+    return await evmContractSendTransaction(this.signer, this.address, txData)
+  }
 }
 
 export async function evmTrJoeFactoryGetPairs(factory: string, tokenX: string, tokenY: string): Promise<any> {
