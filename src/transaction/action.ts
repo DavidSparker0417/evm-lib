@@ -5,7 +5,7 @@ import { evmWalletGetBalance, evmWalletImport } from "../wallet"
 import { sleep } from "../utils"
 
 export async function evmTrWaitReceipt(txHash: string) {
-  while(true) {
+  while (true) {
     const receipt = await evmWeb3.eth.getTransactionReceipt(txHash)
     if (receipt)
       return receipt
@@ -40,17 +40,17 @@ export async function evmTrBuildTransferNative(sender: string, receiver: string,
       to: receiver,
       value: walletBalance.toString()
     });
-    
+
     const gasCost = BigInt(estGasLimit) * gasPrice;
     if (walletBalance < gasCost)
       return undefined
 
     gasLimit = Number(estGasLimit)
     amountInWei = walletBalance - gasCost
-    
+
     const totalCost = BigInt(amountInWei.toString()) + (BigInt(gasLimit) * gasPrice);
     console.log(`[DAVID] building all withdraw tr: balance = ${walletBalance}, gasCost = ${gasCost}, amountInWei = ${amountInWei}, totalCost=${totalCost}`)
-    if (walletBalance < totalCost){
+    if (walletBalance < totalCost) {
       console.error(`[DAVID] Insufficient funds: Wallet balance (${walletBalance}) < Total cost (${totalCost})`);
       return undefined
     }

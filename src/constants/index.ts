@@ -36,7 +36,7 @@ const netConfigs = {
     traderJoe: {
       router: "0x1dcE3231C4eCC9E4C09c83BF02D0c5816A60649D",
       joeToken: "0xdDB63C3576aE64aec4B6c04d1c1418CB6368Ad67",
-      masterChefV2: "0x867A553146BFe10bC8B5761d1B600f76d00a5038",
+      MasterChefJoeV2: "0x867A553146BFe10bC8B5761d1B600f76d00a5038",
       factory: "0x9F8C4ceE925A99A293fd0941C18dE3e5d6471967"
     },
     wallets: {
@@ -45,6 +45,6 @@ const netConfigs = {
   },
 }
 
-const network = 'sei_devnet'
+const network = 'sei_mainnet'
 
 export const evmNetConfig = netConfigs[network]

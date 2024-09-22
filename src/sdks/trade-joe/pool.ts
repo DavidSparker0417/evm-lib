@@ -12,7 +12,7 @@ import { TrJoeLBPair } from "./lbPair";
 import { factory } from 'typescript';
 
 export class TrJoeRouter extends EvmContract {
-  constructor(address: string, signer: Web3Account | string) {
+  constructor(address: string, signer: Web3Account | string | undefined = undefined) {
     super(address, signer)
     this.contract = new evmWeb3.eth.Contract(abi, address)
   }
@@ -89,7 +89,7 @@ export class TrJoeRouter extends EvmContract {
   async getFactory(): Promise<string> {
     return await this.contract.methods.getFactory().call()
   }
-  
+
   async getPairs(tokenX: string, tokenY: string): Promise<any[]> {
     const factory: string = await this.getFactory()
     const pairs: any = await evmTrJoeFactoryGetPairs(factory, tokenX, tokenY)
@@ -98,7 +98,7 @@ export class TrJoeRouter extends EvmContract {
       binStep: Number(pair.binStep)
     }))
   }
-  
+
   async getPairInfo(tokenX: string, tokenY: string, binStep: Numbers): Promise<PairInfo> {
     const factoryAddr: string = await this.getFactory()
     const factory = new TrJoeFactory(factoryAddr, this.signer)
@@ -114,7 +114,7 @@ export class TrJoeRouter extends EvmContract {
     const factory = new TrJoeFactory(factoryAddr, this.signer)
     const pairCount = await factory.getNumberOfLBPairs()
     const pairs: PairInfo[] = []
-    for(let i = 0; i < pairCount; i ++) {
+    for (let i = 0; i < pairCount; i++) {
       const pairAddr = await factory.getLBPairAtIndex(i)
       const pair = new TrJoeLBPair(pairAddr, this.signer)
       pairs.push({
@@ -126,7 +126,7 @@ export class TrJoeRouter extends EvmContract {
     }
     return pairs
   }
-  
+
   async evmTrJoeGetSwapIn(
     tokenX: string,
     tokenY: string,
@@ -146,7 +146,7 @@ export class TrJoeRouter extends EvmContract {
       } catch (error) { }
     }
   }
-  
+
   async getSwapOut(
     tokenX: string,
     tokenY: string,
