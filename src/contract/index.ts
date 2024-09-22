@@ -11,9 +11,9 @@ export class EvmContract {
   public signer: Web3Account
   public contract: Contract<ContractAbi>
 
-  constructor(addr: string, signer: Web3Account|string) {
+  constructor(addr: string, signer : Web3Account|string|undefined = undefined) {
     this.address = addr
-    this.signer = evmAccount(signer)
+    this.signer = evmAccount(signer!)
     this.contract = new Contract([])
   }
 }
