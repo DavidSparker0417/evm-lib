@@ -43,8 +43,11 @@ const netConfigs = {
       pk: '0xacE2105ed22234726DEF5321c0757209E0DB8C7A'
     }
   },
+  bsc_testnet: {
+    rpc: "https://data-seed-prebsc-2-s2.bnbchain.org:8545"
+  }
 }
 
-const network = 'sei_mainnet'
+const network = 'bsc_testnet'
 
 export const evmNetConfig = netConfigs[network]
