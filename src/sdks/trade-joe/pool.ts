@@ -127,7 +127,7 @@ export class TrJoeRouter extends EvmContract {
     return pairs
   }
 
-  async evmTrJoeGetSwapIn(
+  async getSwapIn(
     tokenX: string,
     tokenY: string,
     amountOut: Numbers,

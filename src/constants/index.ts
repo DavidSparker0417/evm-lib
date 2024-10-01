@@ -45,9 +45,17 @@ const netConfigs = {
   },
   bsc_testnet: {
     rpc: "https://data-seed-prebsc-2-s2.bnbchain.org:8545"
+  },
+  bsc_mainnet: {
+    rpc: "https://bsc-dataseed1.ninicoin.io",
+    usdt: "0x55d398326f99059fF775485246999027B3197955",
+    aave: {
+      addressesProvider: "0xA9aD669442f9ABEd99b6B4a803BDae0746FEa220",
+      reservesSetupHelper: "0x699ebC4C8d0c4a3fb1721840Ae75EEeA09D1a608",
+    }
   }
 }
 
-const network = 'bsc_testnet'
+const network = 'bsc_mainnet'
 
 export const evmNetConfig = netConfigs[network]

@@ -140,19 +140,23 @@ async function traderJoeSwap() {
 }
 
 async function traderJoeSwapNativeForToken() {
-  const txHash = await evmTrJoeSwapExactNATIVEForTokens(
-    signer,
-    lbRouter,
-    evmWeb3.utils.toWei("0.001", 'ether'),
-    "0",
-    {
-      pairBinSteps: [1],
-      versions: [3],
-      tokenPath: [quoteToken, baseToken]
-    },
-    signer.address
-  )
-  console.log(`[DAVID](trader-joe) Swap success: txHash =`, txHash)
+  const router = new TrJoeRouter(lbRouter, signer)
+  const amountIn = evmWeb3.utils.toWei("0.0001", 'ether')
+  await evmErc20Approve(signer, baseToken, lbRouter, evmWeb3.utils.toWei("1000", 6),)
+  const tokenAmountOut = await router.getSwapOut(baseToken, quoteToken, amountIn, false)
+  // const tokenAmountOut = await router.getSwapIn(baseToken, quoteToken, amountIn, false)
+  console.log(tokenAmountOut)
+  // const txHash = await router.swapExactNATIVEForTokens(
+  //   amountIn,
+  //   "0",
+  //   {
+  //     pairBinSteps: [1],
+  //     versions: [3],
+  //     tokenPath: [quoteToken, baseToken]
+  //   },
+  //   signer.address
+  // )
+  // console.log(`[DAVID](trader-joe) Swap success: txHash =`, txHash)
 }
 
 async function traderJoeSwapTokenForNative() {
@@ -190,20 +194,20 @@ async function traderJoeFetching() {
   const base = evmNetConfig.usdt
   const wNative = evmNetConfig.wNative
 
-  const pairInfo = await evmTrJoeGetPairInfo(
-    evmNetConfig.traderJoe.router,
+  const router = new TrJoeRouter(lbRouter, signer)
+  const pairInfo = await router.getPairInfo(
     evmNetConfig.usdc,
     evmNetConfig.wNative,
-    5
+    1
   )
 
   const pair = new TrJoeLBPair(pairInfo.address, signer)
   console.log(await pair.getTokenX())
 
-  const activeId = await pair.getActiveId()
-  console.log(activeId)
+  const reserves = await pair.getReserves()
+  console.log(reserves)
 }
-
+// 0.001999999999746056
 async function traderJoePairInfo() {
   const router = new TrJoeRouter(
     evmNetConfig.traderJoe.router,
@@ -280,7 +284,7 @@ async function traderJoeFarmPoolAdd() {
 }
 export async function testContract() {
   // 0. set preset open state
-    await traderSetPresetOpenState();
+    // await traderSetPresetOpenState();
   // 1. add quote assets
   // await traderAddQuoteAssets()
   // 2. create pair
@@ -291,7 +295,7 @@ export async function testContract() {
   // await traderJoeFarmPoolAdd()
   // await testTraderJoeRemoveLiquidity()
   // await traderJoeSwap()
-  // await traderJoeSwapNativeForToken()
+  await traderJoeSwapNativeForToken()
   // await traderJoeSwapTokenForNative()
   // await traderJoeFetching()
   // await traderJoePairInfo()

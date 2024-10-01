@@ -34,6 +34,9 @@ export class TrJoeLBPair {
     return await this.contract.methods.getBinStep().call()
   }
 
+  async getReserves(): Promise<Numbers[]> {
+    return await this.contract.methods.getReserves().call()
+  }
   async balanceOf(address: string, id: Numbers): Promise<Numbers> {
     return await this.contract.methods.balanceOf(address, id).call()
   }
