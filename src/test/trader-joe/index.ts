@@ -266,7 +266,7 @@ export async function testTraderJoe() {
   // await traderJoeSwapTokenForNative()
   // await traderJoeFetching()
   // await traderJoePairInfo()
-  // await traderjoeV1AddLiquidity('usdt', 100, 'wNative', 10)
+  // await traderjoeV1AddLiquidity('usdc', 0.01, 'wNative', 0.01)
 
   // ------------- farming
   // await traderJoeFarmPoolAdd()
