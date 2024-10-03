@@ -21,4 +21,8 @@ export class AAVE_Pool extends EvmContract {
     const txData = this.contract.methods.setConfiguration(asset, {data: configuration}).encodeABI()
     return await evmContractSendTransaction(this.signer, this.address, txData)
   }
+
+  async getReserveData(asset: string): Promise<any> {
+    return await this.contract.methods.getReserveData(asset).call()
+  }
 }

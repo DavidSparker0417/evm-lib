@@ -21,12 +21,11 @@ const netConfigs = {
     usdt: "0x702DC8AfCc61d28dA5D8Fd131218fbe8DAF19CeC",
     usdc: "0x702DC8AfCc61d28dA5D8Fd131218fbe8DAF19CeC",
     traderJoe: {
-      router: "0xe20e58B747bC1E9753DF595D19001B366f49A78D",
+      router: "0x9D8925eDD38a00EDA66F90a68Efb2dD6E2659bf5",
       joeToken: "0x9C178e5771BF5402888ac9B637B95f7F1cA7b66D",
       MasterChefJoeV2: "0xFF418410053701626430d7c0AAd8207d6Ea6C800",
-      factory: "0x8331B3EaDd81b00AA2bAD2f7F338010279b242dE",
       sJoeStaking: "0xacf3eC6DDf5E74f0e864A01B0cBa336ac0CdB9cC",
-      joeRouter: "0xBa9dB1d84D2A841B942486e7e09C66F756B0a3F3"
+      joeRouter: "0x5634A5B62d6bdA85a3167B373BDDceD6523093f8"
     }
   },
   sei_mainnet: {
@@ -50,6 +49,8 @@ const netConfigs = {
   bsc_mainnet: {
     rpc: "https://bsc-dataseed1.ninicoin.io",
     usdt: "0x55d398326f99059fF775485246999027B3197955",
+    usdc: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
+    aaveToken: "0xfb6115445Bff7b52FeB98650C87f44907E58f802",
     aave: {
       addressesProvider: "0xA9aD669442f9ABEd99b6B4a803BDae0746FEa220",
       reservesSetupHelper: "0x699ebC4C8d0c4a3fb1721840Ae75EEeA09D1a608",

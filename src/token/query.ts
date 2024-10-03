@@ -22,3 +22,19 @@ export async function evmTokenGetDecimals(token: string): Promise<number> {
   const decimals = Number(await contract.methods.decimals().call())
   return decimals
 }
+
+export async function evmTokenGetSymbol(token: string): Promise<string> {
+  const contract = evmTokenContract(token)
+  if (!contract)
+    return ''
+  const symbol:string = await contract.methods.symbol().call()
+  return symbol
+}
+
+export async function evmTokenTotalSupply(token: string): Promise<Numbers> {
+  const contract = evmTokenContract(token)
+
+  const totalSup:Numbers = await contract.methods.totalSupply().call()
+  return totalSup
+}
+

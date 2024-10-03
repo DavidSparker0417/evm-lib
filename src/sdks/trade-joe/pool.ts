@@ -90,6 +90,10 @@ export class TrJoeRouter extends EvmContract {
     return await this.contract.methods.getFactory().call()
   }
 
+  async getV1Factory(): Promise<string> {
+    return await this.contract.methods.getV1Factory().call()
+  }
+
   async getPairs(tokenX: string, tokenY: string): Promise<any[]> {
     const factory: string = await this.getFactory()
     const pairs: any = await evmTrJoeFactoryGetPairs(factory, tokenX, tokenY)

@@ -23,6 +23,11 @@ export class AAVE_PoolConfigurator extends EvmContract {
     return await evmContractSendTransaction(this.signer, this.address, txData)
   }
 
+  async dropReserve(asset: string): Promise<string> {
+    const txData = this.contract.methods.dropReserve(asset).encodeABI()
+    return await evmContractSendTransaction(this.signer, this.address, txData)
+  }
+  
   async setDebtCeiling(asset: string, debtCeiling: Numbers): Promise<string> {
     const txData = this.contract.methods.setDebtCeiling(asset, debtCeiling).encodeABI()
     return await evmContractSendTransaction(this.signer, this.address, txData)

@@ -15,6 +15,10 @@ export class AAVE_PoolAddressesProvider extends EvmContract {
     return await this.contract.methods.getPool().call()
   }
 
+  async getPriceOracle(): Promise<string> {
+    return await this.contract.methods.getPriceOracle().call()
+  }
+
   async getAddress(id: string) {
     return await this.contract.methods.getAddress(toBytes32(id)).call()
   }

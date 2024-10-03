@@ -1,5 +1,6 @@
 import Web3 from "web3"
 import { Web3Account } from '../types/index';
+import { evmWeb3 } from "../endpoint";
 const web3 = new Web3()
 
 export function evmAddr(account: any): string {
@@ -27,5 +28,10 @@ export function evmWalletImport(privKey: string): Web3Account {
 }
 
 export function evmAddrIsValid(addr: string): boolean {
+  try {
+    evmWeb3.utils.toChecksumAddress(addr) 
+  } catch (error) {
+    return false
+  }
   return true
 }

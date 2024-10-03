@@ -7,6 +7,7 @@ import { testToken } from './token';
 import { evmNetConfig } from '../constants';
 import { testTransaction } from './transaction';
 import { aaveTest } from './aave';
+import { testTraderJoe } from './trader-joe';
 
 dotenv.config()
 
@@ -18,7 +19,8 @@ async function test() {
   // await testContract()
   // testToken()
   // await testTransaction()
-  await aaveTest()
+  // await aaveTest()
+  await testTraderJoe()
 }
 
 test()
