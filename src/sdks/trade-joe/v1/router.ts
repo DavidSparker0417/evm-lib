@@ -5,6 +5,9 @@ import { Web3Account } from "../../../types";
 import { evmWeb3 } from "../../../endpoint";
 import { Numbers } from "web3";
 import { evmContractSendTransaction } from "../../../contract/common";
+import { factory } from 'typescript';
+import { JoeFactory } from "./joeFactory";
+import { evmTokenGetBalance } from "../../../token";
 
 export class JoeRouter extends EvmContract {
   constructor(addr: string, signer: Web3Account|string|undefined) {
@@ -37,5 +40,21 @@ export class JoeRouter extends EvmContract {
       amountOut, amountInMax, path, to, dealine
     ).encodeABI()
     return await evmContractSendTransaction(this.signer, this.address, txData)
+  }
+
+  async getFactory(): Promise<string> {
+    return await this.contract.methods.factory().call()
+  }
+
+  async getPair(tokenX: string, tokenY: string): Promise<string> {
+    const factoryAddr = await this.getFactory();
+    const factory = new JoeFactory(factoryAddr, this.signer)
+    return await factory.getPair(tokenX, tokenY)
+  }
+
+  async getLpBalance(address: string, tokenX: string, tokenY: string): Promise<Numbers> {
+    const pair = await this.getPair(tokenX, tokenY)
+    const [_, lpBalance] = await evmTokenGetBalance(address, pair)
+    return lpBalance
   }
 }

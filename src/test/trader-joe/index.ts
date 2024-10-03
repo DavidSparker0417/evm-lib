@@ -171,11 +171,12 @@ async function traderJoePairInfo() {
 async function traderJoeFarming() {
   const tokenX = evmNetConfig.usdc
   const tokenY = evmNetConfig.wNative
-  const binStep = 1;
+  
   // 1.get the usdc-wNative lp
-  const router = new TrJoeRouter(evmNetConfig.traderJoe.router, signer)
+  const router = new JoeRouter(evmNetConfig.traderJoe.joeRouter, signer)
   // 1.1. check lp balance
-  const lpBalance = await router.getLpBalance(signer.address, tokenX, tokenY, binStep)
+  const lpToken = await router.getPair(tokenX, tokenY)
+  const lpBalance = await router.getLpBalance(signer.address, tokenX, tokenY)
   console.log(`[DAVID] (usdc-native) lp balance =`, lpBalance)
   if (!lpBalance) {
     console.log(`[DAVID] Insufficient balance to deposit`)
@@ -187,7 +188,8 @@ async function traderJoeFarming() {
     signer
   )
   // 2.1 get pool list
-  const poolId = await masterChefV2.findPoolId(tokenX, tokenY, 1)
+  const poolId = await masterChefV2.findPoolId(tokenX, tokenY)
+  await evmErc20Approve(signer, lpToken, masterChefV2.address, lpBalance)
   console.log(`[DAVID] Depositing lp to pool(${poolId}) ...`)
   const txHash = await masterChefV2.deposit(poolId, lpBalance)
   console.log(`[DAVID] deposit succeeded. txHash = ${txHash}`)
@@ -232,11 +234,10 @@ async function traderSetPresetOpenState() {
 
 async function traderJoeFarmPoolAdd() {
   const masterChefV2 = new TrJoeMasterChefV2(evmNetConfig.traderJoe.MasterChefJoeV2, signer)
-  const router = new TrJoeRouter(evmNetConfig.traderJoe.router, signer)
-  const pairInfo = await router.getPairInfo(
-    evmNetConfig.usdc, evmNetConfig.wNative, 1
-  )
-  await masterChefV2.addPool(1, pairInfo.address, ZERO_ADRESS)
+  const router = new JoeRouter(evmNetConfig.traderJoe.joeRouter, signer)
+  const usdcPairAddr = await router.getPair(evmNetConfig.usdc, evmNetConfig.wNative)
+  const txHash = await masterChefV2.addPool(1, usdcPairAddr, ZERO_ADRESS)
+  console.log(`[DAVID](traderJoeFarmPoolAdd) new pool added! txHash =`, txHash)
 }
 
 async function traderjoeV1AddLiquidity(_tokenX: string, amountX: number, _tokenY: string, amountY: number) {
@@ -293,13 +294,15 @@ export async function testTraderJoe() {
   // 3. add liquidity
   // await traderJoeAddLiquidity()
   // 4. add lp token of the pool
-  // await traderJoeFarmPoolAdd()
   // await testTraderJoeRemoveLiquidity()
   // await traderJoeSwap()
   // await traderJoeSwapNativeForToken()
   // await traderJoeSwapTokenForNative()
   // await traderJoeFetching()
   // await traderJoePairInfo()
-  // await traderJoeFarming()
-  await traderjoeV1AddLiquidity('usdt', 100, 'wNative', 10)
+  // await traderjoeV1AddLiquidity('usdt', 100, 'wNative', 10)
+
+  // ------------- farming
+  // await traderJoeFarmPoolAdd()
+  await traderJoeFarming()
 }

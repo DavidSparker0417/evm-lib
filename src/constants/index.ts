@@ -22,9 +22,9 @@ const netConfigs = {
     usdc: "0x702DC8AfCc61d28dA5D8Fd131218fbe8DAF19CeC",
     traderJoe: {
       router: "0x9D8925eDD38a00EDA66F90a68Efb2dD6E2659bf5",
-      joeToken: "0x9C178e5771BF5402888ac9B637B95f7F1cA7b66D",
-      MasterChefJoeV2: "0xFF418410053701626430d7c0AAd8207d6Ea6C800",
-      sJoeStaking: "0xacf3eC6DDf5E74f0e864A01B0cBa336ac0CdB9cC",
+      joeToken: "0xF816cDa127AD3C8355856734788fb3cC55194fB7",
+      MasterChefJoeV2: "0x44940F9cf5Af0B539Ecf83debcf09a4d0fdd7cCE",
+      sJoeStaking: "0x671f8E4EB38928730925cf64952A1DF7bc7b855A",
       joeRouter: "0x5634A5B62d6bdA85a3167B373BDDceD6523093f8"
     }
   },

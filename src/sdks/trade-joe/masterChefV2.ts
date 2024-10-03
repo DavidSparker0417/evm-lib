@@ -6,17 +6,15 @@ import { evmContractSendTransaction } from "../../contract/common";
 import { evmWeb3 } from '../../endpoint/index';
 import { TrJoePoolInfo } from "./types";
 import { TrJoeLBPair } from './lbPair';
+import { JoeRouter } from "./v1/router";
+import { evmNetConfig } from "../../constants";
+import { EvmContract } from "../../contract";
 
-export class TrJoeMasterChefV2 {
-
-  private contract: Contract<ContractAbi>
-  private signer: Web3Account | undefined
-  private address: string
+export class TrJoeMasterChefV2 extends EvmContract{
 
   constructor(contractAddr: string, signer: Web3Account | string | undefined = undefined) {
-    this.address = contractAddr
+    super(contractAddr, signer)
     this.contract = new evmWeb3.eth.Contract(abi, contractAddr)
-    this.signer = signer ? evmAccount(signer) : undefined
   }
 
   // deposit lp token
@@ -60,16 +58,10 @@ export class TrJoeMasterChefV2 {
     return await evmContractSendTransaction(this.signer as Web3Account, this.address, txData)
   }
 
-  async findPoolId(tokenX: string, tokenY: string, binStep: Numbers): Promise<number> {
+  async findPoolId(tokenX: string, tokenY: string): Promise<number> {
+    const router = new JoeRouter(evmNetConfig.traderJoe.joeRouter, this.signer)
+    const targetLp = await router.getPair(tokenX, tokenY)
     const poolList = await this.getPoolList()
-    for (let i = 0; i < poolList.length; i ++) {
-      const pool = poolList[i]
-      try {
-        const pair = new TrJoeLBPair(pool.lpToken, this.signer)
-        if (tokenX === await pair.getTokenX() && tokenY === await pair.getTokenY())
-          return i
-      } catch (error) {}
-    }
-    return -1
+    return poolList.findIndex((p: TrJoePoolInfo) => p.lpToken.toLowerCase() === targetLp.toLowerCase())
   }
 }
