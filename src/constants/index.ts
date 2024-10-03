@@ -31,13 +31,14 @@ const netConfigs = {
   sei_mainnet: {
     rpc: "https://evm-rpc.sei-apis.com",
     wNative: "0xE30feDd158A2e3b13e9badaeABaFc5516e95e8C7",
-    usdt: "",
+    usdt: "0xB75D0B03c06A926e488e2659DF1A861F860bD3d1",
     usdc: "0x3894085Ef7Ff0f0aeDf52E2A2704928d1Ec074F1",
     traderJoe: {
-      router: "0x7E7c06a74cC21426ff87F4E68c575c04CDc51C87",
-      joeToken: "0xdDB63C3576aE64aec4B6c04d1c1418CB6368Ad67",
-      MasterChefJoeV2: "0x867A553146BFe10bC8B5761d1B600f76d00a5038",
-      factory: "0x952DA8f497B0b192Fd6c8D532de584BFCE508D7E"
+      router: "0xFAE073bdF2FaCB05AAFE41D52ccA842c45008170",
+      joeToken: "0x555cAE48ce91cAF8C3DE06abC06554d7032815A0",
+      MasterChefJoeV2: "0xe50A5Ea575e4A4CCABC65DC2Ae338c9f7E51b9c0",
+      factory: "0x672Aa181c0bd9fC713F33C5Aa481412e8777Dc1b",
+      joeRouter: "0xFAE073bdF2FaCB05AAFE41D52ccA842c45008170"
     },
     wallets: {
       pk: '0xacE2105ed22234726DEF5321c0757209E0DB8C7A'
@@ -58,6 +59,6 @@ const netConfigs = {
   }
 }
 
-const network = 'sei_devnet'
+const network = 'sei_mainnet'
 
 export const evmNetConfig = netConfigs[network]
