@@ -8,11 +8,15 @@ const netConfigs = {
     wNative: "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
     usdt: "0x9702230A8Ea53601f5cD2dc00fDBc13d4dF4A8c7",
     usdc: "0xB97EF9Ef8734C71904D8002F8b6Bc66Dd9c48a6E",
+    aaveToken: "",
     traderJoe: {
       router: "0x18556DA13313f3532c54711497A8FedAC273220E",
       joeToken: "0x6e84a6216eA6dACC71eE8E6b0a5B7322EEbC0fDd",
       MasterChefJoeV2: "0xd6a4F121CA35509aF06A0Be99093d08462f53052",
       factory: "0xb43120c4745967fa9b93E79C149E66B0f2D6Fe0c"
+    },
+    aave: {
+      addressesProvider: ""
     }
   },
   sei_devnet: {
@@ -20,12 +24,16 @@ const netConfigs = {
     wNative: "0x57eE725BEeB991c70c53f9642f36755EC6eb2139",
     usdt: "0x702DC8AfCc61d28dA5D8Fd131218fbe8DAF19CeC",
     usdc: "0x702DC8AfCc61d28dA5D8Fd131218fbe8DAF19CeC",
+    aaveToken: "",
     traderJoe: {
       router: "0x9D8925eDD38a00EDA66F90a68Efb2dD6E2659bf5",
       joeToken: "0xF816cDa127AD3C8355856734788fb3cC55194fB7",
       MasterChefJoeV2: "0x44940F9cf5Af0B539Ecf83debcf09a4d0fdd7cCE",
       sJoeStaking: "0x671f8E4EB38928730925cf64952A1DF7bc7b855A",
       joeRouter: "0x5634A5B62d6bdA85a3167B373BDDceD6523093f8"
+    },
+    aave: {
+      addressesProvider: ""
     }
   },
   sei_mainnet: {
@@ -33,6 +41,7 @@ const netConfigs = {
     wNative: "0xE30feDd158A2e3b13e9badaeABaFc5516e95e8C7",
     usdt: "",
     usdc: "0x3894085Ef7Ff0f0aeDf52E2A2704928d1Ec074F1",
+    aaveToken: "",
     traderJoe: {
       router: "0x7E7c06a74cC21426ff87F4E68c575c04CDc51C87",
       joeToken: "0xdDB63C3576aE64aec4B6c04d1c1418CB6368Ad67",
@@ -41,10 +50,16 @@ const netConfigs = {
     },
     wallets: {
       pk: '0xacE2105ed22234726DEF5321c0757209E0DB8C7A'
+    },
+    aave: {
+      addressesProvider: ""
     }
   },
   bsc_testnet: {
-    rpc: "https://data-seed-prebsc-2-s2.bnbchain.org:8545"
+    rpc: "https://data-seed-prebsc-2-s2.bnbchain.org:8545",
+    aave: {
+      addressesProvider: ""
+    }
   },
   bsc_mainnet: {
     rpc: "https://bsc-dataseed1.ninicoin.io",

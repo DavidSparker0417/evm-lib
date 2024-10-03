@@ -17,6 +17,10 @@ export class TrJoeMasterChefV2 extends EvmContract{
     this.contract = new evmWeb3.eth.Contract(abi, contractAddr)
   }
 
+  async joe(): Promise<string> {
+    return await this.contract.methods.joe().call()
+  }
+
   // deposit lp token
   async deposit(pid: Numbers, amount: Numbers): Promise<string> {
     const data = this.contract.methods.deposit(pid, amount).encodeABI()

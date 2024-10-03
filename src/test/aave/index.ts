@@ -8,6 +8,8 @@ import { AAVE_PoolConfigurator } from "../../sdks/aave/poolConfigurator";
 import { evmTokenGetBalance, evmTokenTotalSupply } from "../../token";
 
 async function aaveFetching() {
+  if (!evmNetConfig.aave)
+    return 
   const addrProvider = new AAVE_PoolAddressesProvider(evmNetConfig.aave.addressesProvider, signer)
   const poolAddr = await addrProvider.getPool()
   const pool = new AAVE_Pool(poolAddr, signer)
