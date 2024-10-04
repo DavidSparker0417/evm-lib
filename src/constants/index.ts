@@ -74,6 +74,6 @@ const netConfigs = {
   }
 }
 
-const network = 'sei_mainnet'
+const network = 'sei_devnet'
 
 export const evmNetConfig = netConfigs[network]

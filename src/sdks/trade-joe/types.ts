@@ -39,8 +39,8 @@ export interface JoePath {
 export interface PairInfo {
   address: string,
   binStep: number,
-  tokenX?: string|undefined,
-  tokenY?: string|undefined,
+  tokenX?: string | undefined,
+  tokenY?: string | undefined,
   activeId?: Numbers
 }
 
@@ -50,4 +50,9 @@ export interface TrJoePoolInfo {
   lastRewardTimestamp: number,
   accJoePerShare: number,
   rewarder: string
+}
+
+export interface FarmUserInfo {
+  amount : Numbers
+  reward: Numbers
 }

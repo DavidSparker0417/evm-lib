@@ -4,13 +4,14 @@ import { Web3Account } from "../../types";
 import { evmAccount } from "../../wallet";
 import { evmContractSendTransaction } from "../../contract/common";
 import { evmWeb3 } from '../../endpoint/index';
-import { TrJoePoolInfo } from "./types";
+import { TrJoePoolInfo, FarmUserInfo } from './types';
 import { TrJoeLBPair } from './lbPair';
 import { JoeRouter } from "./v1/router";
 import { evmNetConfig } from "../../constants";
 import { EvmContract } from "../../contract";
+import BigNumber from "bignumber.js";
 
-export class TrJoeMasterChefV2 extends EvmContract{
+export class TrJoeMasterChefV2 extends EvmContract {
 
   constructor(contractAddr: string, signer: Web3Account | string | undefined = undefined) {
     super(contractAddr, signer)
@@ -33,6 +34,7 @@ export class TrJoeMasterChefV2 extends EvmContract{
 
   async poolInfo(pid: Numbers): Promise<TrJoePoolInfo> {
     const poolInfo: any = await this.contract.methods.poolInfo(pid).call()
+    // console.log(poolInfo)
     return {
       lpToken: poolInfo.lpToken,
       allocPoint: Number(poolInfo.allocPoint),
@@ -41,7 +43,37 @@ export class TrJoeMasterChefV2 extends EvmContract{
       rewarder: poolInfo.rewarder
     }
   }
-  
+
+  async userInfo(pid: Numbers, user: string): Promise<any> {
+    const uInfo: any = await this.contract.methods.userInfo(pid, user).call()
+    const poolInfo = await this.poolInfo(pid)
+    const reward: BigNumber = (new BigNumber(uInfo.amount.toString())).multipliedBy(poolInfo.accJoePerShare).minus(uInfo.rewardDebt.toString())
+    return {
+      amount: uInfo.amount,
+      reward: reward.toString()
+    }
+  }
+
+  async pendingTokens(pid: Numbers, userAddr: string): Promise<Numbers> {
+    const pendingInfo:any = await this.contract.methods.pendingTokens(pid, userAddr).call()
+    return pendingInfo.pendingJoe
+  }
+
+  async withdraw(pid: Numbers, _amount?: Numbers): Promise<string> {
+    let amount = _amount
+    if (amount === undefined)
+    {
+      const uInfo = await this.userInfo(pid, this.signer.address)
+      amount = uInfo.amount
+    }
+    const txData = this.contract.methods.withdraw(pid, amount).encodeABI()
+    return await evmContractSendTransaction(this.signer, this.address, txData)
+  }
+
+  async harvest(pid: Numbers): Promise<string> {
+    return await this.withdraw(pid, 0)
+  }
+
   async getPoolList(): Promise<TrJoePoolInfo[]> {
     const poolCount = await this.poolLength()
     const poolList: TrJoePoolInfo[] = []
@@ -51,7 +83,7 @@ export class TrJoeMasterChefV2 extends EvmContract{
     }
     return poolList
   }
-  
+
   async addPool(allocPoint: Numbers, lpToken: string, rewarder: string): Promise<string> {
     const txData = this.contract.methods.add(allocPoint, lpToken, rewarder).encodeABI()
     return await evmContractSendTransaction(this.signer as Web3Account, this.address, txData)

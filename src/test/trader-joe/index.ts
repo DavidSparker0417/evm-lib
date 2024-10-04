@@ -13,7 +13,8 @@ import { evmNetConfig, ZERO_ADRESS } from "../../constants";
 import { TrJoeFactory } from "../../sdks";
 import { JoeRouter } from "../../sdks/trade-joe/v1/router";
 import { evmAddrIsValid, evmWalletGetBalance } from "../../wallet";
-import { traderJoeFarming, traderJoeFarmingFetch, traderJoeFarmPoolAdd } from "./farming";
+import { traderJoeFarmingDeposit, traderJoeFarmingFetch, traderJoeFarmingHarvest, traderJoeFarmPoolAdd } from "./farming";
+import { traderJoeStakeDeposit, traderJoeStakeAdminOperation, traderJoeStakeFetching, traderJoeStakeHarvest } from "./staking";
 
 const lbRouter = evmNetConfig.traderJoe.router
 const baseToken = evmNetConfig.usdc
@@ -270,6 +271,14 @@ export async function testTraderJoe() {
 
   // ------------- farming
   // await traderJoeFarmPoolAdd()
-  // await traderJoeFarming()
-  await traderJoeFarmingFetch()
+  // await traderJoeFarmingDeposit()
+  // await traderJoeFarmingFetch()
+  // await traderJoeFarmingHarvest()
+
+  // ------------- staking
+  // await traderJoeStakeAdminOperation()
+  // await traderJoeStakeDeposit()
+  await traderJoeStakeHarvest()
+  
+  // await traderJoeStakeFetching()
 }

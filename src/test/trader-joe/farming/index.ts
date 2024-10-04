@@ -1,9 +1,10 @@
 import { signer } from "../.."
 import { evmNetConfig, ZERO_ADRESS } from "../../../constants"
 import { evmErc20Approve } from "../../../contract"
+import { evmWeb3 } from "../../../endpoint";
 import { TrJoeMasterChefV2 } from '../../../sdks/trade-joe/masterChefV2';
 import { JoeRouter } from "../../../sdks/trade-joe/v1/router"
-import { evmTokenGetBalance } from "../../../token";
+import { evmTokenGetBalance, evmTokenGetDecimals } from "../../../token";
 
 export async function traderJoeFarmPoolAdd() {
   const masterChefV2 = new TrJoeMasterChefV2(evmNetConfig.traderJoe.MasterChefJoeV2, signer)
@@ -13,10 +14,10 @@ export async function traderJoeFarmPoolAdd() {
   console.log(`[DAVID](traderJoeFarmPoolAdd) new pool added! txHash =`, txHash)
 }
 
-export async function traderJoeFarming() {
+export async function traderJoeFarmingDeposit() {
   const tokenX = evmNetConfig.usdc
   const tokenY = evmNetConfig.wNative
-  
+
   // 1.get the usdc-wNative lp
   const router = new JoeRouter(evmNetConfig.traderJoe.joeRouter, signer)
   // 1.1. check lp balance
@@ -40,8 +41,17 @@ export async function traderJoeFarming() {
   console.log(`[DAVID] deposit succeeded. txHash = ${txHash}`)
 }
 
+export async function traderJoeFarmingHarvest() {
+  const masterChefV2 = new TrJoeMasterChefV2(evmNetConfig.traderJoe.MasterChefJoeV2, signer)
+  const txHash = await masterChefV2.harvest(1)
+  console.log(`[DAVID] harvest! txHash =`, txHash)
+}
+
 export async function traderJoeFarmingFetch() {
   const masterChefV2 = new TrJoeMasterChefV2(evmNetConfig.traderJoe.MasterChefJoeV2, signer)
   const joe = await masterChefV2.joe()
-  console.log(await evmTokenGetBalance(signer.address, joe))
+  const joeDecimals = await evmTokenGetDecimals(joe)
+  const pendingJoeToken = await masterChefV2.pendingTokens(1, signer.address)
+  console.log(`[DAVID] FARM pending rewards : `, evmWeb3.utils.fromWei(pendingJoeToken, joeDecimals))
+  console.log(`[DAVID] Current Joe token balance :`, await evmTokenGetBalance(signer.address, joe))
 }
