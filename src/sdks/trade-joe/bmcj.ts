@@ -1,29 +1,38 @@
-import { Contract, ContractAbi, Numbers } from "web3"
-import abi from "./abis/MasterChefV2.json"
+import { Numbers } from "web3";
+import { EvmContract, evmErc20Approve } from "../../contract";
+import { evmWeb3 } from "../../endpoint";
 import { Web3Account } from "../../types";
-import { evmAccount } from "../../wallet";
+import abi from "./abis/BoostedMasterChef.json"
 import { evmContractSendTransaction } from "../../contract/common";
-import { evmWeb3 } from '../../endpoint/index';
-import { TrJoePoolInfo, FarmUserInfo } from './types';
-import { TrJoeLBPair } from './lbPair';
-import { JoeRouter } from "./v1/router";
-import { evmNetConfig } from "../../constants";
-import { EvmContract } from "../../contract";
-import BigNumber from "bignumber.js";
+import { TrJoePoolInfo } from "./types";
 import { evmTokenFetchPrice, evmTokenGetBalance, evmTokenGetDecimals } from "../../token";
 import { JoePair } from "./v1/joePair";
+import BigNumber from "bignumber.js";
+import { JoeRouter } from "./v1/router";
+import { evmNetConfig } from "../../constants";
 
-export class TrJoeMasterChefV2 extends EvmContract {
-
-  constructor(contractAddr: string, signer: Web3Account | string | undefined = undefined) {
-    super(contractAddr, signer)
-    this.contract = new evmWeb3.eth.Contract(abi, contractAddr)
+export class BMCJ extends EvmContract {
+  constructor(addr: string, signer?: Web3Account|string|undefined) {
+    super(addr, signer)
+    this.contract = new evmWeb3.eth.Contract(abi, addr)
   }
 
-  async joe(): Promise<string> {
-    return await this.contract.methods.joe().call()
+  async poolLength(): Promise<number> {
+    return Number(await this.contract.methods.poolLength().call())
   }
 
+  async JOE(): Promise<string> {
+    return await this.contract.methods.JOE().call()
+  }
+
+  async MASTER_CHEF_V2(): Promise<string> {
+    return await this.contract.methods.MASTER_CHEF_V2().call()
+  }
+
+  async MASTER_PID(): Promise<number> {
+    return Number(await this.contract.methods.MASTER_PID().call())
+  }
+  
   async joePerSec(): Promise<Numbers> {
     return await this.contract.methods.joePerSec().call()
   }
@@ -37,10 +46,6 @@ export class TrJoeMasterChefV2 extends EvmContract {
     return await evmContractSendTransaction(this.signer as Web3Account, this.address, data)
   }
 
-  async poolLength(): Promise<number> {
-    return Number(await this.contract.methods.poolLength().call())
-  }
-
   async _poolInfo(pid: Numbers): Promise<any> {
     return await this.contract.methods.poolInfo(pid).call()
   }
@@ -52,9 +57,9 @@ export class TrJoeMasterChefV2 extends EvmContract {
     const lpToken = new JoePair(lpTokenAddr, this.signer)
     const lpSummary:any = await lpToken.summary()
     const liquidity = Number(new BigNumber(amount.toString()).multipliedBy(BigNumber(lpSummary.liquidity)).dividedBy(BigNumber(lpSummary.totalSupply)))
-    const joe = await this.joe()
+    const joe = await this.JOE()
     const joeDecimal = await evmTokenGetDecimals(joe)
-    const joePrice = 0.32//await evmTokenFetchPrice(joe)
+    const joePrice = await evmTokenFetchPrice(joe)
     const annualReward = Number(await this.joePerSec()) * 86400 * 365 * joePrice
     const annRd = Number(evmWeb3.utils.fromWei(Math.floor(annualReward), joeDecimal))
     const apr = (annRd * 100)/liquidity
@@ -108,8 +113,15 @@ export class TrJoeMasterChefV2 extends EvmContract {
     return poolList
   }
 
-  async addPool(allocPoint: Numbers, lpToken: string, rewarder: string): Promise<string> {
-    const txData = this.contract.methods.add(allocPoint, lpToken, rewarder).encodeABI()
+  // ------------ operation
+  async init(dummyToken: string): Promise<string> {
+    await evmErc20Approve(this.signer, dummyToken, this.address)
+    const txData = this.contract.methods.init(dummyToken).encodeABI()
+    return await evmContractSendTransaction(this.signer, this.address, txData)
+  }
+
+  async addPool(allocPoint: Numbers, veJoeShareBp: Numbers, lpToken: string, rewarder: string): Promise<string> {
+    const txData = this.contract.methods.add(allocPoint, veJoeShareBp, lpToken, rewarder).encodeABI()
     return await evmContractSendTransaction(this.signer as Web3Account, this.address, txData)
   }
 

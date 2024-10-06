@@ -2,16 +2,28 @@ import { signer } from "../.."
 import { evmNetConfig, ZERO_ADRESS } from "../../../constants"
 import { evmErc20Approve } from "../../../contract"
 import { evmWeb3 } from "../../../endpoint";
+import { BMCJ } from "../../../sdks/trade-joe/bmcj";
 import { TrJoeMasterChefV2 } from '../../../sdks/trade-joe/masterChefV2';
 import { JoeRouter } from "../../../sdks/trade-joe/v1/router"
 import { evmTokenGetBalance, evmTokenGetDecimals } from "../../../token";
 
 export async function traderJoeFarmPoolAdd() {
-  const masterChefV2 = new TrJoeMasterChefV2(evmNetConfig.traderJoe.MasterChefJoeV2, signer)
-  const router = new JoeRouter(evmNetConfig.traderJoe.joeRouter, signer)
-  const usdcPairAddr = await router.getPair(evmNetConfig.usdc, evmNetConfig.wNative)
-  const txHash = await masterChefV2.addPool(1, usdcPairAddr, ZERO_ADRESS)
+  const bmcj = new BMCJ(evmNetConfig.traderJoe.bmcj, signer)
+  let txHash
+  // 1. initialize
+  const mcj = new TrJoeMasterChefV2(await bmcj.MASTER_CHEF_V2(), signer)
+  await mcj.addPool(
+    0,
+    evmNetConfig.traderJoe.bmcjt,
+    ZERO_ADRESS
+  )
+  txHash = await bmcj.init(evmNetConfig.traderJoe.bmcjt)
   console.log(`[DAVID](traderJoeFarmPoolAdd) new pool added! txHash =`, txHash)
+  // 2. add pool
+  // const router = new JoeRouter(evmNetConfig.traderJoe.joeRouter, signer)
+  // const usdcPairAddr = await router.getPair(evmNetConfig.usdt, evmNetConfig.wNative)
+  // txHash = await bmcj.addPool(1, 100, usdcPairAddr, ZERO_ADRESS)
+  // console.log(`[DAVID](traderJoeFarmPoolAdd) new pool added! txHash =`, txHash)
 }
 
 export async function traderJoeFarmingDeposit() {
@@ -29,29 +41,45 @@ export async function traderJoeFarmingDeposit() {
     return
   }
   // 2. deposit lp to master chef usdc-wNative lp
-  const masterChefV2 = new TrJoeMasterChefV2(
-    evmNetConfig.traderJoe.MasterChefJoeV2,
+  const bmcj = new BMCJ(
+    evmNetConfig.traderJoe.bmcj,
     signer
   )
   // 2.1 get pool list
-  const poolId = await masterChefV2.findPoolId(tokenX, tokenY)
-  await evmErc20Approve(signer, lpToken, masterChefV2.address, lpBalance)
+  const poolId = await bmcj.findPoolId(tokenX, tokenY)
+  await evmErc20Approve(signer, lpToken, bmcj.address, lpBalance)
   console.log(`[DAVID] Depositing lp to pool(${poolId}) ...`)
-  const txHash = await masterChefV2.deposit(poolId, lpBalance)
+  const txHash = await bmcj.deposit(poolId, lpBalance)
   console.log(`[DAVID] deposit succeeded. txHash = ${txHash}`)
 }
 
 export async function traderJoeFarmingHarvest() {
-  const masterChefV2 = new TrJoeMasterChefV2(evmNetConfig.traderJoe.MasterChefJoeV2, signer)
-  const txHash = await masterChefV2.harvest(1)
+  const bmcj = new BMCJ(evmNetConfig.traderJoe.bmcj, signer)
+  const txHash = await bmcj.harvest(1)
   console.log(`[DAVID] harvest! txHash =`, txHash)
 }
 
+export async function traderJoeFarmingWithdraw() {
+  const bmcj = new BMCJ(evmNetConfig.traderJoe.bmcj, signer)
+  const txHash = await bmcj.withdraw(1)
+  console.log(`[DAVID] withdraw! txHash =`, txHash)
+}
+
 export async function traderJoeFarmingFetch() {
-  const masterChefV2 = new TrJoeMasterChefV2(evmNetConfig.traderJoe.MasterChefJoeV2, signer)
-  const joe = await masterChefV2.joe()
+  const bmcj = new BMCJ(evmNetConfig.traderJoe.bmcj, signer)
+  console.log(await bmcj._poolInfo(0))
+
+  const mchefV2Addr = await bmcj.MASTER_CHEF_V2()
+  console.log(mchefV2Addr)
+  const mchefV2 = new TrJoeMasterChefV2(mchefV2Addr, signer)
+  console.log(await mchefV2.totalAllocPoint())
+
+  const joe = await bmcj.JOE()
   const joeDecimals = await evmTokenGetDecimals(joe)
-  const pendingJoeToken = await masterChefV2.pendingTokens(1, signer.address)
-  console.log(`[DAVID] FARM pending rewards : `, evmWeb3.utils.fromWei(pendingJoeToken, joeDecimals))
+  const pendingJoeToken = await bmcj.pendingTokens(0, signer.address)
+  console.log(`[DAVID] FARM pending rewards : `, pendingJoeToken)
+  // console.log(`[DAVID] FARM pending rewards : `, evmWeb3.utils.fromWei(pendingJoeToken, joeDecimals))
   console.log(`[DAVID] Current Joe token balance :`, await evmTokenGetBalance(signer.address, joe))
+  // const poolInfo = await bmcj.poolInfo(0)
+  // console.log(`[DAVID] poolInfo :`, poolInfo)
 }

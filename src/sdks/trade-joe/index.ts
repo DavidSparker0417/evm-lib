@@ -26,3 +26,9 @@ export function evmTrJoeToken(address: string) {
 
 export * from "./factory"
 export * from "./pool"
+export * from "./bmcj"
+export * from "./joeToken"
+export * from "./lbPair"
+export * from "./masterChefV2"
+export * from "./stake"
+export * from "./types"

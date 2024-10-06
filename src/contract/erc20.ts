@@ -4,6 +4,8 @@ import { TokenMeta, Web3Account } from '../types/index';
 import { evmAccount } from "../wallet";
 import { Numbers } from "web3";
 import { evmContractSendTransaction } from "./common";
+import { evmTokenGetBalance } from "../token";
+import { signer } from '../test/index';
 
 export interface ERC20Details {
   name: string,
@@ -32,8 +34,13 @@ export async function evmErc20IsAllowed(tokenAddr: string, owner: string, spende
   return allowedAmount >= amount
 }
 
-export async function evmErc20Approve(_signer: Web3Account|string, tokenAddr: string, spender: string, amount: Numbers) {
+export async function evmErc20Approve(_signer: Web3Account|string, tokenAddr: string, spender: string, _amount?: Numbers) {
   const signer = evmAccount(_signer)
+  let amount = _amount
+  if (amount === undefined) {
+    const [, rawTokenAmount] = await evmTokenGetBalance(signer.address, tokenAddr)
+    amount = rawTokenAmount
+  }
   const contract = evmErc20Contract(tokenAddr)
   if (await evmErc20IsAllowed(tokenAddr, signer.address, spender, amount)) {
     return ''

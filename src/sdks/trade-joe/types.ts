@@ -45,14 +45,21 @@ export interface PairInfo {
 }
 
 export interface TrJoePoolInfo {
+  tokenX: {
+    address: string,
+    amount: Numbers
+  }
+  tokenY: {
+    address: string,
+    amount: Numbers
+  },
+  liquidity: Number
+  apr: Number,
   lpToken: string,
-  allocPoint: number,
-  lastRewardTimestamp: number,
-  accJoePerShare: number,
-  rewarder: string
+  amount: Numbers,
 }
 
 export interface FarmUserInfo {
-  amount : Numbers
+  amount: Numbers
   reward: Numbers
 }

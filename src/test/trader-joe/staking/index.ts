@@ -1,5 +1,6 @@
 import { signer } from "../..";
-import { evmNetConfig } from "../../../constants";
+import { dexScreenerTokenPrice } from "../../../3rdparty/dexscreener";
+import { evmNetConfig, netConfigs } from "../../../constants";
 import { evmErc20Approve } from "../../../contract";
 import { TrJoeMasterChefV2 } from "../../../sdks/trade-joe/masterChefV2";
 import { TrJoeStableJoeStaking } from "../../../sdks/trade-joe/stake";

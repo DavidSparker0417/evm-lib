@@ -7,10 +7,12 @@ import { evmNetConfig } from '../constants';
 import { testTransaction } from './transaction';
 import { aaveTest } from './aave';
 import { testTraderJoe } from './trader-joe';
+import { fetchingPrices } from '../token';
 
 dotenv.config()
 
 evmRpcInit(evmNetConfig.rpc)
+fetchingPrices()
 
 export const signer = evmWalletImport(process.env.PRIVATE_KEY!)
 async function test() {

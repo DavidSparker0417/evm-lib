@@ -1,6 +1,6 @@
 {
   "name": "@david-lab/evm-lib",
-  "version": "1.0.53",
+  "version": "1.0.55",
   "description": "Ethereum web3 library",
   "main": "dist/index.js",
   "scripts": {
@@ -17,6 +17,7 @@
     "@aave/core-v3": "^1.19.3",
     "@types/bignumber.js": "^5.0.0",
     "@types/node": "^22.3.0",
+    "axios": "^1.7.7",
     "bignumber.js": "^9.1.2",
     "dotenv": "^16.4.5",
     "typescript": "^5.5.4",

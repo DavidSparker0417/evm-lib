@@ -1,6 +1,7 @@
 import { Numbers } from "web3"
 import { evmTokenContract } from "."
 import { evmWeb3 } from "../endpoint"
+import { dexScreenerTokenPrice } from "../3rdparty/dexscreener"
 
 export async function evmTokenGetBalance(who: string, token: string): Promise<[number, Numbers]> {
   const contract = evmTokenContract(token)
@@ -38,3 +39,10 @@ export async function evmTokenTotalSupply(token: string): Promise<Numbers> {
   return totalSup
 }
 
+export async function evmTokenFetchPrice(token: string): Promise<number> {
+  let price = 0
+  // 1. try to get from dexscreener
+  price = await dexScreenerTokenPrice(token)
+
+  return price
+}

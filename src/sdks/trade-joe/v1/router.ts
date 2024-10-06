@@ -7,7 +7,8 @@ import { Numbers } from "web3";
 import { evmContractSendTransaction } from "../../../contract/common";
 import { factory } from 'typescript';
 import { JoeFactory } from "./joeFactory";
-import { evmTokenGetBalance } from "../../../token";
+import { evmTokenGetBalance, evmTokenGetSymbol } from "../../../token";
+import { JoePair } from "./joePair";
 
 export class JoeRouter extends EvmContract {
   constructor(addr: string, signer: Web3Account|string|undefined) {
@@ -56,5 +57,39 @@ export class JoeRouter extends EvmContract {
     const pair = await this.getPair(tokenX, tokenY)
     const [_, lpBalance] = await evmTokenGetBalance(address, pair)
     return lpBalance
+  }
+
+  async poolLength(): Promise<number> {
+    return Number(await this.contract.methods.poolLength().call())
+  }
+
+  async poolInfo(pid: Numbers): Promise<any> {
+    return await this.contract.methods.poolInfo(pid).call()
+  }
+
+  async getPools(): Promise<any> {
+    const poolCount = await this.poolLength()
+    const pools:any[] = []
+    
+    for(let i = 0; i < poolCount; i ++) {
+      const poolInfo:any = await this.poolInfo(i)
+      const lpTokenAddr = poolInfo.lpToken
+      const lpToken = new JoePair(lpTokenAddr)
+      const tokenX = await lpToken.token0()
+      const tokenY = await lpToken.token1()
+      const [reserveX, reserveY] = await lpToken.getReserves()
+      pools.push({
+        tokenX: {
+          address: tokenX,
+          symbol: await evmTokenGetSymbol(tokenX),
+          amount: reserveX
+        },
+        tokenY: {
+          address: tokenY,
+          symbol: await evmTokenGetSymbol(tokenY),
+          amount: reserveY
+        }
+      })
+    }
   }
 }

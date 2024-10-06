@@ -2,7 +2,7 @@ import { factory } from "typescript"
 
 export const ZERO_ADRESS = "0x0000000000000000000000000000000000000000"
 
-const netConfigs = {
+export const netConfigs = {
   avalanche: {
     rpc: "https://avalanche-c-chain-rpc.publicnode.com",
     wNative: "0xB31f66AA3C1e785363F0875A1B74E27b85FD66c7",
@@ -12,7 +12,9 @@ const netConfigs = {
     traderJoe: {
       router: "0x18556DA13313f3532c54711497A8FedAC273220E",
       joeToken: "0x6e84a6216eA6dACC71eE8E6b0a5B7322EEbC0fDd",
+      joeRouter: "0x60aE616a2155Ee3d9A68541Ba4544862310933d4",
       MasterChefJoeV2: "0xd6a4F121CA35509aF06A0Be99093d08462f53052",
+      bmcj: "0x4483f0b6e2F5486D06958C20f8C39A7aBe87bf8F",
       factory: "0xb43120c4745967fa9b93E79C149E66B0f2D6Fe0c"
     },
     aave: {
@@ -29,6 +31,8 @@ const netConfigs = {
       router: "0x9D8925eDD38a00EDA66F90a68Efb2dD6E2659bf5",
       joeToken: "0xF816cDa127AD3C8355856734788fb3cC55194fB7",
       MasterChefJoeV2: "0x44940F9cf5Af0B539Ecf83debcf09a4d0fdd7cCE",
+      bmcj: "0xCB86BD8801A1b2e66ba59F45C3726dda18bBF708",
+      bmcjt: "0xCB6271D54bdEBCEa9aE4930715f58fD9763f169F",
       sJoeStaking: "0x671f8E4EB38928730925cf64952A1DF7bc7b855A",
       joeRouter: "0x5634A5B62d6bdA85a3167B373BDDceD6523093f8"
     },
@@ -58,12 +62,14 @@ const netConfigs = {
   },
   bsc_testnet: {
     rpc: "https://data-seed-prebsc-2-s2.bnbchain.org:8545",
+    wNative: "0x094616f0bdfb0b526bd735bf66eca0ad254ca81f",
     aave: {
       addressesProvider: ""
     }
   },
   bsc_mainnet: {
     rpc: "https://bsc-dataseed1.ninicoin.io",
+    wNative: "0xbb4CdB9CBd36B01bD1cBaEBF2De08d9173bc095c",
     usdt: "0x55d398326f99059fF775485246999027B3197955",
     usdc: "0x8AC76a51cc950d9822D68b83fE1Ad97B32Cd580d",
     aaveToken: "0xfb6115445Bff7b52FeB98650C87f44907E58f802",
