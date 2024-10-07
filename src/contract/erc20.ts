@@ -62,7 +62,12 @@ export async function evmErc20GetMeta(addr: string): Promise<TokenMeta> {
   }
 }
 
-export async function evmErc20Mint(_signer: string|Web3Account, tokenAddr: string, amount: Numbers, to:string|undefined): Promise<string> {
+export async function evmErc20GetOwner(tokenAddr: string): Promise<string> {
+  const contract = evmErc20Contract(tokenAddr)
+  return await contract.methods.owner().call()
+}
+
+export async function evmErc20Mint(_signer: string|Web3Account, tokenAddr: string, amount: Numbers, to?:string): Promise<string> {
   const signer = evmAccount(_signer)
   const contract = evmErc20Contract(tokenAddr)
 

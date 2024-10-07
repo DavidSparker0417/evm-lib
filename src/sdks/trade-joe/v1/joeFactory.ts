@@ -11,7 +11,7 @@ export class JoeFactory extends EvmContract {
   }
 
   async createPair(tokenA: string, tokenB: string): Promise<string> {
-    const txData = this.contract.methods.createPair().encodeABI()
+    const txData = this.contract.methods.createPair(tokenA, tokenB).encodeABI()
     return await evmContractSendTransaction(this.signer, this.address, txData)
   }
 

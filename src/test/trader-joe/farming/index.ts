@@ -1,46 +1,61 @@
 import { signer } from "../.."
 import { evmNetConfig, ZERO_ADRESS } from "../../../constants"
-import { evmErc20Approve } from "../../../contract"
+import { evmErc20Approve, evmErc20GetOwner, evmErc20Mint } from "../../../contract"
 import { evmWeb3 } from "../../../endpoint";
 import { BMCJ } from "../../../sdks/trade-joe/bmcj";
 import { TrJoeMasterChefV2 } from '../../../sdks/trade-joe/masterChefV2';
-import { JoeRouter } from "../../../sdks/trade-joe/v1/router"
+import { JoeRouter } from '../../../sdks/trade-joe/v1/router';
 import { evmTokenGetBalance, evmTokenGetDecimals } from "../../../token";
 
-export async function traderJoeFarmPoolAdd() {
+export async function traderJoeFarmInit() {
   const bmcj = new BMCJ(evmNetConfig.traderJoe.bmcj, signer)
-  let txHash
-  // 1. initialize
+  const joeRouter = new JoeRouter(evmNetConfig.traderJoe.joeRouter, signer)
+  const joe = await bmcj.JOE()
   const mcj = new TrJoeMasterChefV2(await bmcj.MASTER_CHEF_V2(), signer)
-  await mcj.addPool(
-    0,
+  let txHash
+  
+  // 1. create pair for bmcjt-wNative
+  // console.log(`[DAIVD](traderJoeFarmInit) 1. create pair for joe-wNative`)
+  // txHash = await joeRouter.createPair(joe, evmNetConfig.wNative)
+  // console.log(`[DAVID] pair created! txHash =`, txHash)
+  
+  // 2. add master pool to masterchefV2
+  console.log(`[DAIVD](traderJoeFarmInit) 2. add master pool to masterchefV2`)
+  txHash = await mcj.addPool(
+    1,
     evmNetConfig.traderJoe.bmcjt,
     ZERO_ADRESS
   )
+  console.log(`[DAVID](traderJoeFarmInit) master pool added to mcj ! txHash =`, txHash)
+
+  // 4. initialize boosted masterchef joe
+  console.log(`[DAIVD](traderJoeFarmInit) 4. initialize boosted masterchef joe`)
   txHash = await bmcj.init(evmNetConfig.traderJoe.bmcjt)
+  console.log(`[DAVID](traderJoeFarmInit) bmcj init! txHash =`, txHash)
+}
+export async function traderJoeFarmPoolAdd() {
+  const bmcj = new BMCJ(evmNetConfig.traderJoe.bmcj, signer)
+  const router = new JoeRouter(evmNetConfig.traderJoe.joeRouter, signer)
+  const usdtPairAddr = await router.getPair(evmNetConfig.usdt, evmNetConfig.wNative)
+  let txHash = await bmcj.addPool(1, 100, usdtPairAddr, ZERO_ADRESS)
   console.log(`[DAVID](traderJoeFarmPoolAdd) new pool added! txHash =`, txHash)
-  // 2. add pool
-  // const router = new JoeRouter(evmNetConfig.traderJoe.joeRouter, signer)
-  // const usdcPairAddr = await router.getPair(evmNetConfig.usdt, evmNetConfig.wNative)
-  // txHash = await bmcj.addPool(1, 100, usdcPairAddr, ZERO_ADRESS)
-  // console.log(`[DAVID](traderJoeFarmPoolAdd) new pool added! txHash =`, txHash)
 }
 
 export async function traderJoeFarmingDeposit() {
-  const tokenX = evmNetConfig.usdc
+  const tokenX = evmNetConfig.usdt
   const tokenY = evmNetConfig.wNative
 
-  // 1.get the usdc-wNative lp
+  // 1.get the usdt-wNative lp
   const router = new JoeRouter(evmNetConfig.traderJoe.joeRouter, signer)
-  // 1.1. check lp balance
+  // 1. check lp balance
   const lpToken = await router.getPair(tokenX, tokenY)
   const lpBalance = await router.getLpBalance(signer.address, tokenX, tokenY)
-  console.log(`[DAVID] (usdc-native) lp balance =`, lpBalance)
+  console.log(`[DAVID] (usdt-native) lp balance =`, lpBalance)
   if (!lpBalance) {
     console.log(`[DAVID] Insufficient balance to deposit`)
     return
   }
-  // 2. deposit lp to master chef usdc-wNative lp
+  // 2. deposit lp to master chef usdt-wNative lp
   const bmcj = new BMCJ(
     evmNetConfig.traderJoe.bmcj,
     signer
@@ -54,32 +69,27 @@ export async function traderJoeFarmingDeposit() {
 }
 
 export async function traderJoeFarmingHarvest() {
+  const tokenX = evmNetConfig.usdt
+  const tokenY = evmNetConfig.wNative
+  
   const bmcj = new BMCJ(evmNetConfig.traderJoe.bmcj, signer)
-  const txHash = await bmcj.harvest(1)
+  const poolId = await bmcj.findPoolId(tokenX, tokenY)
+  const txHash = await bmcj.harvest(poolId)
   console.log(`[DAVID] harvest! txHash =`, txHash)
 }
 
 export async function traderJoeFarmingWithdraw() {
   const bmcj = new BMCJ(evmNetConfig.traderJoe.bmcj, signer)
-  const txHash = await bmcj.withdraw(1)
+  const txHash = await bmcj.withdraw(0)
   console.log(`[DAVID] withdraw! txHash =`, txHash)
 }
 
 export async function traderJoeFarmingFetch() {
   const bmcj = new BMCJ(evmNetConfig.traderJoe.bmcj, signer)
-  console.log(await bmcj._poolInfo(0))
-
-  const mchefV2Addr = await bmcj.MASTER_CHEF_V2()
-  console.log(mchefV2Addr)
-  const mchefV2 = new TrJoeMasterChefV2(mchefV2Addr, signer)
-  console.log(await mchefV2.totalAllocPoint())
-
   const joe = await bmcj.JOE()
-  const joeDecimals = await evmTokenGetDecimals(joe)
   const pendingJoeToken = await bmcj.pendingTokens(0, signer.address)
   console.log(`[DAVID] FARM pending rewards : `, pendingJoeToken)
-  // console.log(`[DAVID] FARM pending rewards : `, evmWeb3.utils.fromWei(pendingJoeToken, joeDecimals))
   console.log(`[DAVID] Current Joe token balance :`, await evmTokenGetBalance(signer.address, joe))
-  // const poolInfo = await bmcj.poolInfo(0)
-  // console.log(`[DAVID] poolInfo :`, poolInfo)
+  const poolInfo = await bmcj.poolInfo(0)
+  console.log(`[DAVID] poolInfo :`, poolInfo)
 }

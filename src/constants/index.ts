@@ -29,12 +29,10 @@ export const netConfigs = {
     aaveToken: "",
     traderJoe: {
       router: "0x9D8925eDD38a00EDA66F90a68Efb2dD6E2659bf5",
-      joeToken: "0xF816cDa127AD3C8355856734788fb3cC55194fB7",
-      MasterChefJoeV2: "0x44940F9cf5Af0B539Ecf83debcf09a4d0fdd7cCE",
-      bmcj: "0xCB86BD8801A1b2e66ba59F45C3726dda18bBF708",
-      bmcjt: "0xCB6271D54bdEBCEa9aE4930715f58fD9763f169F",
-      sJoeStaking: "0x671f8E4EB38928730925cf64952A1DF7bc7b855A",
-      joeRouter: "0x5634A5B62d6bdA85a3167B373BDDceD6523093f8"
+      bmcj: "0x48be7F950056825BB241348C3Ba3C097852f5378",
+      bmcjt: "0x8DfaDcf7e6D3ED9668a14f66077d06068713CaF2",
+      sJoeStaking: "0x88EA1cf80DB459182209B871Dc13A6b64Fd183C9",
+      joeRouter: "0x8f5b417a070f3BC57A7E135AdC3996A697581B14"
     },
     aave: {
       addressesProvider: ""

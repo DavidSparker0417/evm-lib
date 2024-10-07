@@ -100,7 +100,7 @@ export class BMCJ extends EvmContract {
   }
 
   async harvest(pid: Numbers): Promise<string> {
-    return await this.withdraw(pid, 0)
+    return await this.deposit(pid, 0)
   }
 
   async getPoolList(): Promise<TrJoePoolInfo[]> {

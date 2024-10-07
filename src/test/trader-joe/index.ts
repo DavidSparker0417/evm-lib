@@ -13,8 +13,9 @@ import { evmNetConfig, ZERO_ADRESS } from "../../constants";
 import { TrJoeFactory } from "../../sdks";
 import { JoeRouter } from "../../sdks/trade-joe/v1/router";
 import { evmAddrIsValid, evmWalletGetBalance } from "../../wallet";
-import { traderJoeFarmingDeposit, traderJoeFarmingFetch, traderJoeFarmingHarvest, traderJoeFarmingWithdraw, traderJoeFarmPoolAdd } from "./farming";
+import { traderJoeFarmingDeposit, traderJoeFarmingFetch, traderJoeFarmingHarvest, traderJoeFarmingWithdraw, traderJoeFarmInit, traderJoeFarmPoolAdd } from "./farming";
 import { traderJoeStakeDeposit, traderJoeStakeAdminOperation, traderJoeStakeFetching, traderJoeStakeHarvest } from "./staking";
+import { sleep } from "../../utils";
 
 const lbRouter = evmNetConfig.traderJoe.router
 const baseToken = evmNetConfig.usdc
@@ -267,15 +268,18 @@ export async function testTraderJoe() {
   // await traderJoeSwapTokenForNative()
   // await traderJoeFetching()
   // await traderJoePairInfo()
-  // await traderjoeV1AddLiquidity('usdc', 0.01, 'wNative', 0.01)
 
   // ++++++++++++++++++++++++ V1 ++++++++++++++++++++++++
   // ------------- farming
+  await traderJoeFarmInit()
+  await traderjoeV1AddLiquidity('usdt', 0.01, 'wNative', 0.01)
   await traderJoeFarmPoolAdd()
-  // await traderJoeFarmingDeposit()
-  // await traderJoeFarmingHarvest()
-  // await traderJoeFarmingWithdraw()
-  // await traderJoeFarmingFetch()
+  await traderJoeFarmingDeposit()
+  await sleep(5000)
+  await traderJoeFarmingHarvest()
+  await sleep(5000)
+  await traderJoeFarmingWithdraw()
+  await traderJoeFarmingFetch()
 
   // ------------- staking
   // await traderJoeStakeAdminOperation()
